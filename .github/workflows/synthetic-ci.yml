@@ -1,0 +1,42 @@
+name: Synthetic Safety CI — NO TRADING
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-synthetic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout this public repository only
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          submodules: false
+          lfs: false
+      - name: Set up exact Python 3.13.5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.13.5'
+          architecture: x64
+          check-latest: false
+      - name: Verify Python version
+        run: python -c "import sys; assert sys.version_info[:3] == (3, 13, 5)"
+      - name: Syntax and imports
+        run: python -m compileall -q safe_public_ci tests
+      - name: Deterministic synthetic-only security tests
+        env:
+          SAFE_TEST_ONLY: '1'
+        run: python -m unittest discover -s tests -v
+      - name: Verify no live execution occurred
+        run: |
+          echo 'NO LIVE TRADING; NO EXCHANGE AUTH; NO PERFORMANCE EVALUATION.'
+          echo 'PRIVATE SCIENTIFIC LOCKS UNCHANGED.'

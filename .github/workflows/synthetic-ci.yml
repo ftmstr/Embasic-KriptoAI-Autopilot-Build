@@ -2,7 +2,7 @@ name: Synthetic Safety CI — NO TRADING
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'safety-ci-*']
   workflow_dispatch:
 
 permissions:

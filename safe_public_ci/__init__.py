@@ -1,1 +1,2 @@
-"""Synthetic-only public CI tests; no real data or exchange integration."""
+"""Synthetic-only public CI; no real exchange or model components."""
+SAFE_TEST_ONLY = True

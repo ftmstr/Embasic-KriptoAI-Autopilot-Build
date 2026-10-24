@@ -1,4 +1,4 @@
-"""Fail-closed trading and toy-data integrity checks."""
+"""Fail-closed trading and toy-data integrity checks; explicitly stdlib-only."""
 import ast
 import unittest
 from pathlib import Path
@@ -30,10 +30,22 @@ class GuardTests(unittest.TestCase):
         with self.assertRaises(ValueError): checksum(b"")
     def test_import_whitelist(self):
         root=Path(__file__).resolve().parents[1]
-        allowed={"dataclasses","hashlib","hmac","io","json","math","stat","zipfile"}
+        allowed={"__future__","dataclasses","hashlib","hmac","io","json","math","re","stat","zipfile"}
         for f in (root/"safe_public_ci").glob("*.py"):
             for n in ast.walk(ast.parse(f.read_text())):
                 if isinstance(n,ast.Import):
                     for alias in n.names: self.assertIn(alias.name.split(".")[0],allowed)
                 elif isinstance(n,ast.ImportFrom):
                     self.assertIn((n.module or "").split(".")[0],allowed)
+    def test_dynamic_import_execution_forbidden(self):
+        root=Path(__file__).resolve().parents[1]
+        banned={"eval","exec","__import__","open","compile"}
+        for f in (root/"safe_public_ci").glob("*.py"):
+            for node in ast.walk(ast.parse(f.read_text())):
+                if isinstance(node,ast.Call) and isinstance(node.func,ast.Name):
+                    self.assertNotIn(node.func.id,banned, f.name)
+    def test_public_no_runtime_trading_clients(self):
+        from safe_public_ci.offline_order_fsm import OfflineOrderSimulator, OfflineRiskPolicy
+        simulator=OfflineOrderSimulator(OfflineRiskPolicy())
+        with self.assertRaises(RuntimeError): simulator.place_real_order()
+        with self.assertRaises(RuntimeError): simulator.cancel_real_order()

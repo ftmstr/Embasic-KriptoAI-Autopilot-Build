@@ -1,0 +1,44 @@
+name: RC652 Public PR Synthetic CI - NO TRADING
+
+on:
+  pull_request:
+    branches:
+      - main
+      - research/rc651-offline-order-fsm
+    paths:
+      - 'safe_public_ci/**'
+      - 'tests/**'
+      - '.github/workflows/rc652-pr-synthetic-ci.yml'
+      - 'docs/RC652_SYNTHETIC_SPOT_LEDGER.md'
+
+permissions:
+  contents: read
+
+jobs:
+  offline-synthetic-pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    permissions:
+      contents: read
+    env:
+      SAFE_TEST_ONLY: '1'
+    steps:
+      - name: Checkout Public repository only; do not persist credentials
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          submodules: false
+          lfs: false
+      - name: CPython pinned 3.13.5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.13.5'
+          architecture: x64
+          check-latest: false
+      - name: Static Python 3.13.5 guard
+        run: python -c 'import sys; assert sys.version_info[:3] == (3, 13, 5)'
+      - name: Bytecode syntax check
+        run: python -m compileall -q safe_public_ci tests
+      - name: All offline synthetic unit tests
+        run: python -m unittest discover -s tests -v

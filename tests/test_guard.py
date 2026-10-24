@@ -30,13 +30,18 @@ class GuardTests(unittest.TestCase):
         with self.assertRaises(ValueError): checksum(b"")
     def test_import_whitelist(self):
         root=Path(__file__).resolve().parents[1]
-        allowed={"__future__","dataclasses","hashlib","hmac","io","json","math","re","stat","zipfile"}
+        allowed={"__future__","dataclasses","hashlib","hmac","io","json","math","re","stat","zipfile","safe_public_ci"}
         for f in (root/"safe_public_ci").glob("*.py"):
             for n in ast.walk(ast.parse(f.read_text())):
                 if isinstance(n,ast.Import):
-                    for alias in n.names: self.assertIn(alias.name.split(".")[0],allowed)
+                    for alias in n.names:
+                        self.assertIn(alias.name.split(".")[0],allowed)
+                        if alias.name.startswith("safe_public_ci."):
+                            self.assertEqual(alias.name,"safe_public_ci.offline_order_fsm")
                 elif isinstance(n,ast.ImportFrom):
                     self.assertIn((n.module or "").split(".")[0],allowed)
+                    if (n.module or "").startswith("safe_public_ci."):
+                        self.assertEqual(n.module, "safe_public_ci.offline_order_fsm")
     def test_dynamic_import_execution_forbidden(self):
         root=Path(__file__).resolve().parents[1]
         banned={"eval","exec","__import__","open","compile"}

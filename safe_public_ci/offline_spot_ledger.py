@@ -176,12 +176,14 @@ class SyntheticSpotLedger:
         return required
 
     def submit(self, request: SyntheticSpotIntent, *, as_of_ms: int) -> SyntheticLedgerSnapshot:
-        required = self._reserve(request)
+        if type(request) is not SyntheticSpotIntent or type(request.order) is not SyntheticOrderIntent:
+            raise LedgerRejected("synthetic intent required")
         previous = self.booked.get(request.order.client_id)
         if previous:
             if previous.request != request:
                 raise LedgerRejected("conflicting duplicate spot request")
             return self.balances()
+        required = self._reserve(request)
         if self._killed:
             raise LedgerRejected("immutable kill switch engaged")
         try:

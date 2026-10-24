@@ -43,6 +43,14 @@ class SpotLedgerTests(unittest.TestCase):
         n=len(self.l.journal);b=self.l.balances()
         self.assertEqual(b,self.l.submit(self.r,as_of_ms=1000))
         self.assertEqual(len(self.l.journal),n)
+    def test_replay_submit_after_full_fill_no_second_reserve(self):
+        self.apply(1,"ACK");self.apply(2,"FILL",filled=4,price=100)
+        b=self.l.balances()
+        self.assertEqual(self.l.submit(self.r,as_of_ms=1000),b)
+    def test_replay_submit_after_kill_no_second_reserve(self):
+        self.l.kill_switch()
+        b=self.l.balances()
+        self.assertEqual(self.l.submit(self.r,as_of_ms=1000),b)
     def test_conflicting_idempotency(self):
         with self.assertRaises(LedgerRejected):self.l.submit(replace(self.r,limit_price_ticks=99),as_of_ms=1000)
     def test_buyer_partial_fill(self):

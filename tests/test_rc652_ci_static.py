@@ -19,7 +19,8 @@ class PRWorkflowStaticTests(unittest.TestCase):
         self.assertIn('actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1', self.text)
         self.assertIn("python-version: '3.13.5'", self.text)
     def test_local_suite_only(self):
-        self.assertIn('runs-on: ubuntu-latest', self.text)
+        self.assertIn('runs-on: ubuntu-24.04', self.text)
+        self.assertNotIn('runs-on: ubuntu-latest', self.text)
         self.assertIn('SAFE_TEST_ONLY:', self.text)
         self.assertIn('python -m unittest discover -s tests -v', self.text)
 

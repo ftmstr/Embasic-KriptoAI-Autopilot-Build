@@ -1,0 +1,40 @@
+name: RC653 Synthetic Receipt Regression - NO LIVE
+on:
+  push:
+    branches:
+      - research/rc653-synthetic-receipt-envelope
+    paths:
+      - 'tests/test_rc653_receipt_boundary.py'
+      - 'tests/test_rc653_journal_adversarial.py'
+      - '.github/workflows/rc653-branch-synthetic-ci.yml'
+      - 'safe_public_ci/**'
+permissions:
+  contents: read
+jobs:
+  verify-synthetic-receipts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    permissions:
+      contents: read
+    env:
+      SAFE_TEST_ONLY: '1'
+    steps:
+      - name: Checkout Public Build only without persisted credentials
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          submodules: false
+          lfs: false
+      - name: CPython 3.13.5 x64
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.13.5'
+          architecture: x64
+          check-latest: false
+      - name: Confirm pinned interpreter
+        run: python -c "import sys; assert sys.version_info[:3] == (3, 13, 5)"
+      - name: Compile isolated source and synthetic tests
+        run: python -m compileall -q safe_public_ci tests
+      - name: Run all synthetic-only unit tests
+        run: python -m unittest discover -s tests -v

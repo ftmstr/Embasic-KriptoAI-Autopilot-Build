@@ -37,11 +37,11 @@ class GuardTests(unittest.TestCase):
                     for alias in n.names:
                         self.assertIn(alias.name.split(".")[0],allowed)
                         if alias.name.startswith("safe_public_ci."):
-                            self.assertIn(alias.name,{"safe_public_ci.offline_order_fsm", "safe_public_ci.offline_spot_ledger"})
+                            self.assertEqual(alias.name,"safe_public_ci.offline_order_fsm")
                 elif isinstance(n,ast.ImportFrom):
                     self.assertIn((n.module or "").split(".")[0],allowed)
                     if (n.module or "").startswith("safe_public_ci."):
-                        self.assertIn(n.module, {"safe_public_ci.offline_order_fsm", "safe_public_ci.offline_spot_ledger"})
+                        self.assertEqual(n.module, "safe_public_ci.offline_order_fsm")
     def test_dynamic_import_execution_forbidden(self):
         root=Path(__file__).resolve().parents[1]
         banned={"eval","exec","__import__","open","compile"}

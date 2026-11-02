@@ -122,5 +122,59 @@ class SyntheticJournalAdversarialTests(unittest.TestCase):
         self.assertFalse(self.replay().balances().production_ledger)
 
 
+    def test_empty_history_rejected_for_nonempty_receipt(self):
+        with self.assertRaises(LedgerRejected):
+            self.replay(())
+
+    def test_extra_history_record_rejected(self):
+        with self.assertRaises(LedgerRejected):
+            self.replay(self.entries + (self.entries[0],))
+
+    def test_list_instead_of_immutable_tuple_rejected(self):
+        with self.assertRaises(LedgerRejected):
+            self.replay(list(self.entries))
+
+    def test_external_digest_wrong_case_rejected(self):
+        with self.assertRaises(LedgerRejected):
+            self.replay(expected_digest=self.snapshot.journal_digest.upper())
+
+    def test_external_digest_wrong_length_rejected(self):
+        with self.assertRaises(LedgerRejected):
+            self.replay(expected_digest=self.snapshot.journal_digest[:-1])
+
+    def test_invalid_negative_record_count_rejected(self):
+        with self.assertRaises(LedgerRejected):
+            self.replay(expected_count=-1)
+
+    def test_first_record_payload_truncation_rejected(self):
+        corrupted = replace(self.entries[0], payload_json='{"request":')
+        with self.assertRaises(LedgerRejected):
+            self.replay((corrupted,) + self.entries[1:])
+
+    def test_first_record_noncanonical_spacing_rejected(self):
+        corrupted = replace(self.entries[0],
+                            payload_json=self.entries[0].payload_json + " ")
+        with self.assertRaises(LedgerRejected):
+            self.replay((corrupted,) + self.entries[1:])
+
+    def test_unknown_record_type_rejected(self):
+        corrupted = replace(self.entries[1], kind="LIVE_ORDER")
+        with self.assertRaises(LedgerRejected):
+            self.replay((self.entries[0], corrupted, self.entries[2]))
+
+    def test_second_record_digest_corruption_rejected(self):
+        corrupted = replace(self.entries[1], digest="0" * 64)
+        with self.assertRaises(LedgerRejected):
+            self.replay((self.entries[0], corrupted, self.entries[2]))
+
+    def test_altered_synthetic_risk_limit_rejected(self):
+        with self.assertRaises(LedgerRejected):
+            self.replay(policy=replace(self.policy, max_notional=4500))
+
+    def test_altered_synthetic_base_genesis_rejected(self):
+        with self.assertRaises(LedgerRejected):
+            self.replay(policy=replace(self.policy, base_initial=11))
+
+
 if __name__ == "__main__":
     unittest.main()

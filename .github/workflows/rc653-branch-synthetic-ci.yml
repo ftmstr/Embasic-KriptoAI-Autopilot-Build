@@ -6,6 +6,7 @@ on:
     paths:
       - 'tests/test_rc653_receipt_boundary.py'
       - 'tests/test_rc653_journal_adversarial.py'
+      - 'tests/test_rc653_ci_security.py'
       - '.github/workflows/rc653-branch-synthetic-ci.yml'
       - 'safe_public_ci/**'
 permissions:

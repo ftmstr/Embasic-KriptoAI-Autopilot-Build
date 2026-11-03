@@ -29,7 +29,7 @@ class RC653CISecurityTests(unittest.TestCase):
     def test_workflow_is_present(self):
         self.assertTrue(WORKFLOW.is_file())
 
-    def test_only_owner_branch_push_trigger(self):
+    def test_only_rc653_branch_push_trigger(self):
         self.assertIn("on:\n  push:\n    branches:\n      - research/rc653-synthetic-receipt-envelope", self.source)
         for forbidden in ("pull_request:", "pull_request_target:", "workflow_run:",
                           "repository_dispatch:", "workflow_dispatch:", "schedule:",
@@ -93,7 +93,7 @@ class RC653CISecurityTests(unittest.TestCase):
                           "private/", "KriptoAI-Autopilot.git", "id-token:"):
             self.assertNotIn(forbidden, self.source)
 
-    def test_no_remote_download_install_or_deployment(self):
+    def test_no_unreviewed_shell_download_or_deployment(self):
         for forbidden in ("curl ", "wget ", "pip install", "git clone",
                           "ssh ", "docker ", "upload-artifact",
                           "deploy", "gh release", "release:"):

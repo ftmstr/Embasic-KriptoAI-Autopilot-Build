@@ -1,0 +1,39 @@
+name: RC654 Isolated Synthetic Validation (NO LIVE)
+on:
+  push:
+    branches:
+      - validation/rc654-pr1-rc653-combined-ci
+    paths:
+      - 'tests/test_rc654_validation_safety.py'
+      - '.github/workflows/rc654-validation-synthetic.yml'
+      - 'safe_public_ci/**'
+permissions:
+  contents: read
+jobs:
+  validate-public-synthetic-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    permissions:
+      contents: read
+    env:
+      SAFE_TEST_ONLY: '1'
+    steps:
+      - name: Checkout Public Build only
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          submodules: false
+          lfs: false
+      - name: Pin CPython x64
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.13.5'
+          architecture: x64
+          check-latest: false
+      - name: Check exact Python version
+        run: python -c "import sys; assert sys.version_info[:3] == (3, 13, 5)"
+      - name: Compile synthetic code and tests
+        run: python -m compileall -q safe_public_ci tests
+      - name: Run all isolated synthetic regression tests
+        run: python -m unittest discover -s tests -v

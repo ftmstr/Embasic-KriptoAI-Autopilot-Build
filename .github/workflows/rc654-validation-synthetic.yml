@@ -5,6 +5,7 @@ on:
       - validation/rc654-pr1-rc653-combined-ci
     paths:
       - 'tests/test_rc654_validation_safety.py'
+      - 'tests/test_rc655_release_preflight.py'
       - '.github/workflows/rc654-validation-synthetic.yml'
       - 'safe_public_ci/**'
 permissions:

@@ -158,6 +158,7 @@ def verify_synthetic_snapshot(archive, manifest, *, trusted_manifest_sha256,
         if total > MAX_TOTAL:
             raise SnapshotRejected("oversized member total")
         previous = row["path"]
+    observed = {}
     try:
         with zipfile.ZipFile(io.BytesIO(archive), "r") as z:
             infos = z.infolist()
@@ -175,6 +176,12 @@ def verify_synthetic_snapshot(archive, manifest, *, trusted_manifest_sha256,
                 if len(payload) != row["size"] or not hmac.compare_digest(
                         _digest(payload), row["sha256"]):
                     raise SnapshotRejected("member content mismatch")
+                observed[info.filename] = payload
+        rebuilt, _ = build_synthetic_snapshot(
+            observed, source_commit=trusted_source_commit,
+            rollback_commit=trusted_rollback_commit)
+        if not hmac.compare_digest(rebuilt, archive):
+            raise SnapshotRejected("noncanonical ZIP bytes")
     except (zipfile.BadZipFile, OSError, RuntimeError, EOFError, NotImplementedError,
             ValueError) as exc:
         raise SnapshotRejected("invalid or modified ZIP") from exc

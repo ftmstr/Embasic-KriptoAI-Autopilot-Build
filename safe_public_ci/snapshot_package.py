@@ -46,7 +46,7 @@ def _path_ok(path):
     if not path.startswith("safe_public_ci/"):
         return False
     name = path[len("safe_public_ci/"):]
-    return bool(re.fullmatch(r"[a-z][a-z0-9_]*\.py", name))
+    return name == "__init__.py" or bool(re.fullmatch(r"[a-z][a-z0-9_]*\.py", name))
 
 
 def _pairs_unique(pairs):

@@ -339,5 +339,100 @@ class RC659DisposableToyRollback(unittest.TestCase):
                 trusted_rollback_commit=meta["rollback_commit"]))
 
 
+    def test_rejected_fake_live_manifest_preserves_new(self):
+        import tempfile
+        old, new = self._fixtures()
+        with tempfile.TemporaryDirectory(prefix="rc660_toy_") as d:
+            root = Path(d)
+            target = self._apply_verified(
+                root, *new, manifest_digest=hashlib.sha256(new[1]).hexdigest(),
+                source=self.NEW_SOURCE, rollback=self.OLD_SOURCE)
+            meta = json.loads(old[1])
+            meta["live_trading_allowed"] = True
+            altered = json.dumps(meta, sort_keys=True, separators=(",", ":")).encode()
+            with self.assertRaises(SnapshotRejected):
+                self._apply_verified(
+                    root, old[0], altered, manifest_digest=hashlib.sha256(altered).hexdigest(),
+                    source=self.OLD_SOURCE, rollback=self.GENESIS)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'B'\\n")
+
+    def test_rejected_fake_scientific_validation_preserves_new(self):
+        import tempfile
+        old, new = self._fixtures()
+        with tempfile.TemporaryDirectory(prefix="rc660_toy_") as d:
+            root = Path(d)
+            target = self._apply_verified(
+                root, *new, manifest_digest=hashlib.sha256(new[1]).hexdigest(),
+                source=self.NEW_SOURCE, rollback=self.OLD_SOURCE)
+            meta = json.loads(old[1])
+            meta["scientifically_validated"] = True
+            altered = json.dumps(meta, sort_keys=True, separators=(",", ":")).encode()
+            with self.assertRaises(SnapshotRejected):
+                self._apply_verified(
+                    root, old[0], altered, manifest_digest=hashlib.sha256(altered).hexdigest(),
+                    source=self.OLD_SOURCE, rollback=self.GENESIS)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'B'\\n")
+
+    def test_old_archive_extra_bytes_cannot_replace_new(self):
+        import tempfile
+        old, new = self._fixtures()
+        with tempfile.TemporaryDirectory(prefix="rc660_toy_") as d:
+            root = Path(d)
+            target = self._apply_verified(
+                root, *new, manifest_digest=hashlib.sha256(new[1]).hexdigest(),
+                source=self.NEW_SOURCE, rollback=self.OLD_SOURCE)
+            with self.assertRaises(SnapshotRejected):
+                self._apply_verified(
+                    root, old[0] + b"TRAILER", old[1],
+                    manifest_digest=hashlib.sha256(old[1]).hexdigest(),
+                    source=self.OLD_SOURCE, rollback=self.GENESIS)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'B'\\n")
+
+    def test_old_manifest_unknown_signature_field_cannot_replace_new(self):
+        import tempfile
+        old, new = self._fixtures()
+        with tempfile.TemporaryDirectory(prefix="rc660_toy_") as d:
+            root = Path(d)
+            target = self._apply_verified(
+                root, *new, manifest_digest=hashlib.sha256(new[1]).hexdigest(),
+                source=self.NEW_SOURCE, rollback=self.OLD_SOURCE)
+            meta = json.loads(old[1])
+            meta["signature"] = "NOT-A-SIGNATURE"
+            altered = json.dumps(meta, sort_keys=True, separators=(",", ":")).encode()
+            with self.assertRaises(SnapshotRejected):
+                self._apply_verified(
+                    root, old[0], altered, manifest_digest=hashlib.sha256(altered).hexdigest(),
+                    source=self.OLD_SOURCE, rollback=self.GENESIS)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'B'\\n")
+
+    def test_repeat_verified_new_is_idempotent_toy_bytes(self):
+        import tempfile
+        _, new = self._fixtures()
+        with tempfile.TemporaryDirectory(prefix="rc660_toy_") as d:
+            root = Path(d)
+            first = self._apply_verified(
+                root, *new, manifest_digest=hashlib.sha256(new[1]).hexdigest(),
+                source=self.NEW_SOURCE, rollback=self.OLD_SOURCE)
+            expected = hashlib.sha256(first.read_bytes()).hexdigest()
+            second = self._apply_verified(
+                root, *new, manifest_digest=hashlib.sha256(new[1]).hexdigest(),
+                source=self.NEW_SOURCE, rollback=self.OLD_SOURCE)
+            self.assertEqual(hashlib.sha256(second.read_bytes()).hexdigest(), expected)
+
+    def test_untrusted_old_source_cannot_replace_new(self):
+        import tempfile
+        old, new = self._fixtures()
+        with tempfile.TemporaryDirectory(prefix="rc660_toy_") as d:
+            root = Path(d)
+            target = self._apply_verified(
+                root, *new, manifest_digest=hashlib.sha256(new[1]).hexdigest(),
+                source=self.NEW_SOURCE, rollback=self.OLD_SOURCE)
+            with self.assertRaises(SnapshotRejected):
+                self._apply_verified(
+                    root, *old, manifest_digest=hashlib.sha256(old[1]).hexdigest(),
+                    source="f" * 40, rollback=self.GENESIS)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'B'\\n")
+
+
 if __name__ == "__main__":
     unittest.main()

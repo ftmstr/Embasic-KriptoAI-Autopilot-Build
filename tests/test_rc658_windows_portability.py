@@ -332,9 +332,11 @@ class RC659DisposableToyRollback(unittest.TestCase):
             self.assertNotIn("installer", meta)
             self.assertIs(meta["live_trading_allowed"], False)
             self.assertIs(meta["scientifically_validated"], False)
-            self.assertTrue(verify(archive, manifest) if
-                meta["source_commit"] == SOURCE and
-                meta["rollback_commit"] == ROLLBACK else True)
+            self.assertTrue(verify_synthetic_snapshot(
+                archive, manifest,
+                trusted_manifest_sha256=hashlib.sha256(manifest).hexdigest(),
+                trusted_source_commit=meta["source_commit"],
+                trusted_rollback_commit=meta["rollback_commit"]))
 
 
 if __name__ == "__main__":

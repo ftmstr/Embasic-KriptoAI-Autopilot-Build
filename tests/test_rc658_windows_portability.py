@@ -188,5 +188,154 @@ class RC658WindowsPortabilitySmoke(unittest.TestCase):
         self.assertNotIn("repository:", self.workflow)
 
 
+class RC659DisposableToyRollback(unittest.TestCase):
+    """Windows ephemeral on-disk toy fixture only; never an installed app restore."""
+
+    OLD_SOURCE = "c" * 40
+    NEW_SOURCE = "d" * 40
+    GENESIS = "0" * 40
+    FILENAME = "safe_public_ci/toy.py"
+
+    def _package(self, payload, source, rollback):
+        return build_synthetic_snapshot(
+            {self.FILENAME: payload}, source_commit=source,
+            rollback_commit=rollback)
+
+    def _apply_verified(self, temp_root, archive, manifest,
+                        *, manifest_digest, source, rollback):
+        # Reject first; do not even create a destination on failed verification.
+        verify_synthetic_snapshot(
+            archive, manifest, trusted_manifest_sha256=manifest_digest,
+            trusted_source_commit=source, trusted_rollback_commit=rollback)
+        with zipfile.ZipFile(io.BytesIO(archive), "r") as package:
+            self.assertEqual(package.namelist(), [self.FILENAME])
+            payload = package.read(self.FILENAME)
+        target = temp_root / "toy.py"
+        target.write_bytes(payload)
+        return target
+
+    def _fixtures(self):
+        old = self._package(b"TOY_VERSION = 'A'\\n",
+                            self.OLD_SOURCE, self.GENESIS)
+        new = self._package(b"TOY_VERSION = 'B'\\n",
+                            self.NEW_SOURCE, self.OLD_SOURCE)
+        return old, new
+
+    def test_disposable_old_new_old_roundtrip(self):
+        import tempfile
+        old, new = self._fixtures()
+        with tempfile.TemporaryDirectory(prefix="rc659_toy_") as d:
+            root = Path(d)
+            target = self._apply_verified(
+                root, *old, manifest_digest=hashlib.sha256(old[1]).hexdigest(),
+                source=self.OLD_SOURCE, rollback=self.GENESIS)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'A'\\n")
+            self._apply_verified(
+                root, *new, manifest_digest=hashlib.sha256(new[1]).hexdigest(),
+                source=self.NEW_SOURCE, rollback=self.OLD_SOURCE)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'B'\\n")
+            self._apply_verified(
+                root, *old, manifest_digest=hashlib.sha256(old[1]).hexdigest(),
+                source=self.OLD_SOURCE, rollback=self.GENESIS)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'A'\\n")
+
+    def test_bad_new_archive_cannot_modify_disposable_old(self):
+        import tempfile
+        old, new = self._fixtures()
+        with tempfile.TemporaryDirectory(prefix="rc659_toy_") as d:
+            root = Path(d)
+            target = self._apply_verified(
+                root, *old, manifest_digest=hashlib.sha256(old[1]).hexdigest(),
+                source=self.OLD_SOURCE, rollback=self.GENESIS)
+            corrupt = new[0] + b"untrusted-trailer"
+            with self.assertRaises(SnapshotRejected):
+                self._apply_verified(
+                    root, corrupt, new[1],
+                    manifest_digest=hashlib.sha256(new[1]).hexdigest(),
+                    source=self.NEW_SOURCE, rollback=self.OLD_SOURCE)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'A'\\n")
+
+    def test_bad_new_manifest_receipt_cannot_modify_old(self):
+        import tempfile
+        old, new = self._fixtures()
+        with tempfile.TemporaryDirectory(prefix="rc659_toy_") as d:
+            root = Path(d)
+            target = self._apply_verified(
+                root, *old, manifest_digest=hashlib.sha256(old[1]).hexdigest(),
+                source=self.OLD_SOURCE, rollback=self.GENESIS)
+            with self.assertRaises(SnapshotRejected):
+                self._apply_verified(
+                    root, *new, manifest_digest="f" * 64,
+                    source=self.NEW_SOURCE, rollback=self.OLD_SOURCE)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'A'\\n")
+
+    def test_wrong_new_rollback_reference_cannot_modify_old(self):
+        import tempfile
+        old, new = self._fixtures()
+        with tempfile.TemporaryDirectory(prefix="rc659_toy_") as d:
+            root = Path(d)
+            target = self._apply_verified(
+                root, *old, manifest_digest=hashlib.sha256(old[1]).hexdigest(),
+                source=self.OLD_SOURCE, rollback=self.GENESIS)
+            with self.assertRaises(SnapshotRejected):
+                self._apply_verified(
+                    root, *new, manifest_digest=hashlib.sha256(new[1]).hexdigest(),
+                    source=self.NEW_SOURCE, rollback=self.GENESIS)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'A'\\n")
+
+    def test_wrong_new_source_reference_cannot_modify_old(self):
+        import tempfile
+        old, new = self._fixtures()
+        with tempfile.TemporaryDirectory(prefix="rc659_toy_") as d:
+            root = Path(d)
+            target = self._apply_verified(
+                root, *old, manifest_digest=hashlib.sha256(old[1]).hexdigest(),
+                source=self.OLD_SOURCE, rollback=self.GENESIS)
+            with self.assertRaises(SnapshotRejected):
+                self._apply_verified(
+                    root, *new, manifest_digest=hashlib.sha256(new[1]).hexdigest(),
+                    source=self.OLD_SOURCE, rollback=self.OLD_SOURCE)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'A'\\n")
+
+    def test_damaged_old_cannot_replace_good_new_on_rollback(self):
+        import tempfile
+        old, new = self._fixtures()
+        with tempfile.TemporaryDirectory(prefix="rc659_toy_") as d:
+            root = Path(d)
+            target = self._apply_verified(
+                root, *new, manifest_digest=hashlib.sha256(new[1]).hexdigest(),
+                source=self.NEW_SOURCE, rollback=self.OLD_SOURCE)
+            damaged = old[0][:-4]
+            with self.assertRaises(SnapshotRejected):
+                self._apply_verified(
+                    root, damaged, old[1],
+                    manifest_digest=hashlib.sha256(old[1]).hexdigest(),
+                    source=self.OLD_SOURCE, rollback=self.GENESIS)
+            self.assertEqual(target.read_bytes(), b"TOY_VERSION = 'B'\\n")
+
+    def test_disposable_directory_is_removed_after_smoke(self):
+        import tempfile
+        with tempfile.TemporaryDirectory(prefix="rc659_toy_") as d:
+            root = Path(d)
+            old, _ = self._fixtures()
+            self._apply_verified(
+                root, *old, manifest_digest=hashlib.sha256(old[1]).hexdigest(),
+                source=self.OLD_SOURCE, rollback=self.GENESIS)
+            self.assertTrue((root / "toy.py").is_file())
+        self.assertFalse(root.exists())
+
+    def test_restore_smoke_has_no_signature_or_installer_claim(self):
+        old, new = self._fixtures()
+        for archive, manifest in (old, new):
+            meta = json.loads(manifest)
+            self.assertNotIn("signature", meta)
+            self.assertNotIn("installer", meta)
+            self.assertIs(meta["live_trading_allowed"], False)
+            self.assertIs(meta["scientifically_validated"], False)
+            self.assertTrue(verify(archive, manifest) if
+                meta["source_commit"] == SOURCE and
+                meta["rollback_commit"] == ROLLBACK else True)
+
+
 if __name__ == "__main__":
     unittest.main()

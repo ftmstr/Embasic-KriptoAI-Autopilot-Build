@@ -30,12 +30,14 @@ def verify_dual_platform_metadata(records, *, expected_sha, trusted_run_ids):
         raise EvidenceRejected("expected SHA must be a canonical Git hash")
     if (type(trusted_run_ids) is not dict or
             set(trusted_run_ids) != _PLATFORMS or
-            any(type(n) is not int or n <= 0 for n in trusted_run_ids.values())):
-        raise EvidenceRejected("trusted run mapping is absent or malformed")
+            any(type(n) is not int or n <= 0 for n in trusted_run_ids.values()) or
+            len(set(trusted_run_ids.values())) != len(_PLATFORMS)):
+        raise EvidenceRejected("trusted run mapping is absent, duplicated, or malformed")
     if type(records) is not tuple or len(records) != 2:
         raise EvidenceRejected("exactly two immutable evidence entries required")
     seen = set()
     job_ids = set()
+    run_ids = set()
     totals = set()
     for record in records:
         if type(record) is not dict or set(record) != _FIELDS:
@@ -52,8 +54,10 @@ def verify_dual_platform_metadata(records, *, expected_sha, trusted_run_ids):
                 raise EvidenceRejected("invalid integer field: " + key)
         if (record["run_id"] <= 0 or record["job_id"] <= 0 or
                 record["run_id"] != trusted_run_ids[platform] or
+                record["run_id"] in run_ids or
                 record["job_id"] in job_ids):
-            raise EvidenceRejected("untrusted run or duplicated job identity")
+            raise EvidenceRejected("untrusted or duplicated run/job identity")
+        run_ids.add(record["run_id"])
         job_ids.add(record["job_id"])
         if (record["status"] != "completed" or
                 record["conclusion"] != "success" or

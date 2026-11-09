@@ -29,3 +29,12 @@
 ## 4. TUR 23 follow-up
 
 Independently fetch **final RC665 HEAD** native GitHub-hosted `push` CI run/job/step/logs for both Windows and Ubuntu. Record actual result, not assumed 503 PASS. Deepen adversarial test coverage of RC665's ANSI sanitization, job-boundary semantics, timestamps and untrusted-roster provenance; verify full job log compatibility where available. Do not merge PR #7 or PR #1, do not modify `main` or Private research.
+
+## 5. Actual hosted CI and RC665 defect postmortem
+
+- Initial RC665 source commit `3bcbddd1cf33acc2b1e173ba7506effeae7723c3`: the uploaded `_stamp_ok` month length table accidentally omitted November and December even though local test source included all 12 months. The source blob SHA-1 **did not match** the tested local file (`27cc7ea931116e3ea83e10341f80e7ba61ac167c` versus expected `73a62a1f78b00211dcad98ae353328c2d1e85c0d`). Hosted Ubuntu [run #42544147223](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/42544147223) exposed **503 tests, FAILED (31 errors)**: `IndexError: tuple index out of range` for month 11. Never count this as successful.
+- Fixed source in commit `1e59782897b171935c05bc9fa7dc71e1ba3c5693`, now Git blob matches local-tested `73a62a1f78b00211dcad98ae353328c2d1e85c0d`. The first corrected same-SHA GitHub-hosted runs completed:
+  - [Ubuntu #42544264335](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/42544264335) job `128925736973`: 9/9 steps, **503/503 PASS**, `OK`, 38 RC665 tests.
+  - [Windows #42544264307](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/42544264307) job `128925736791`: 9/9 steps, **503/503 PASS**, `OK`, 38 RC665 tests.
+- Prevention: append 4 targeted invented-input calendar regression tests (November, December, invalid month 13, February 29 in leap year 2028) bringing local RC665 module to **42/42 PASS** and expected full-host suite to **507** per platform, provided those tests run on the exact final reviewed commit. Do **not** transpose 503 PASS onto a later SHA.
+- Do not change workflow paths/permissions, Main or Private repositories; no approval to merge or enable real trading. CI is synthetic-only.

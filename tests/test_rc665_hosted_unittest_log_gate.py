@@ -190,5 +190,20 @@ class HostedLogEnvelopeTests(unittest.TestCase):
         self.assertEqual(run(fixture(ids=(A,)), (A,))['tests'], 1)
 
 
+    def test_39_november_calendar_boundary_valid(self):
+        self.assertEqual(run(fixture())['tests'], 2)
+
+    def test_40_december_calendar_boundary_valid(self):
+        d = fixture().replace(b'2026-11-09', b'2026-12-31')
+        self.assertEqual(run(d)['tests'], 2)
+
+    def test_41_month_thirteen_rejected(self):
+        self.reject(fixture().replace(b'2026-11-09', b'2026-13-09'))
+
+    def test_42_leap_day_2028_accepted(self):
+        d = fixture().replace(b'2026-11-09', b'2028-02-29')
+        self.assertEqual(run(d)['tests'], 2)
+
+
 if __name__ == '__main__':
     unittest.main()

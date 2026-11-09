@@ -165,11 +165,13 @@ def verify_hosted_unittest_log(log, *, trusted_log_sha256, trusted_case_ids,
                 raise HostedLogRejected("missing unittest OK")
             stage = "postlude"
         else:
+            if tail_cleanup and payload != "":
+                raise HostedLogRejected("nonempty log after final cleanup marker")
             if payload == "Post job cleanup.":
                 post_cleanup += 1
             if payload == "Cleaning up orphan processes":
                 tail_cleanup += 1
-            if (payload == TEST_STEP or payload.startswith("##[group]Run ") or
+            if (payload == TEST_STEP or payload.startswith("##[group]Run") or
                     payload.startswith("test_") or payload.startswith("Ran ") or
                     payload == "OK"):
                 raise HostedLogRejected("extra testcase or duplicate summary after success")

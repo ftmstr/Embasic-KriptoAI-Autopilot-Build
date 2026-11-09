@@ -41,6 +41,7 @@ def _validate_utf8_python(raw):
             any(ch < 32 and ch not in (9, 10) or ch == 127 for ch in raw)):
         raise SourceByteRejected("noncanonical source encoding or newline")
     # Byte claims do not prove Python syntax, safety, or GitHub provenance.
+    # No network, filesystem or live-trading capabilities are introduced here.
     # Never load additional libraries or execute/compile claimed source code.
     # Reject invisible Unicode formatting, bidirectional and separator controls.
     if any(ch not in ("\t", "\n") and not ch.isprintable() for ch in source):

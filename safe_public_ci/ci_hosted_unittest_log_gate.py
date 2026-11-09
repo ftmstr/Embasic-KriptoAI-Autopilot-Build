@@ -169,8 +169,9 @@ def verify_hosted_unittest_log(log, *, trusted_log_sha256, trusted_case_ids,
                 post_cleanup += 1
             if payload == "Cleaning up orphan processes":
                 tail_cleanup += 1
-            if (payload == TEST_STEP or payload.startswith("test_") or
-                    payload.startswith("Ran ") or payload == "OK"):
+            if (payload == TEST_STEP or payload.startswith("##[group]Run ") or
+                    payload.startswith("test_") or payload.startswith("Ran ") or
+                    payload == "OK"):
                 raise HostedLogRejected("extra testcase or duplicate summary after success")
             if "\x1b" in payload and "\x1b" in SGR.sub("", payload):
                 raise HostedLogRejected("unexpected terminal control in footer")

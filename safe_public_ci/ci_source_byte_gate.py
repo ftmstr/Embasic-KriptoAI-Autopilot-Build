@@ -40,6 +40,7 @@ def _validate_utf8_python(raw):
     if (raw.startswith(b"\xef\xbb\xbf") or not raw.endswith(b"\n") or
             any(ch < 32 and ch not in (9, 10) or ch == 127 for ch in raw)):
         raise SourceByteRejected("noncanonical source encoding or newline")
+    # Byte claims do not prove Python syntax, safety, or GitHub provenance.
     # Never load additional libraries or execute/compile claimed source code.
     # Reject invisible Unicode formatting, bidirectional and separator controls.
     if any(ch not in ("\t", "\n") and not ch.isprintable() for ch in source):

@@ -173,5 +173,25 @@ class RC664RosterGuardTests(unittest.TestCase):
                                              trusted_roster_sha256=canonical_roster_sha256(ROSTER))
 
 
+    def test_37_backward_timestamp_rejected(self):
+        data = output().splitlines(keepends=True)
+        data[1] = data[1].replace(b"2026-11-09", b"2026-11-08")
+        self.bad(b"".join(data))
+
+    def test_38_equal_timestamps_allowed(self):
+        self.assertEqual(verify(output())["tests"], 2)
+
+    def test_39_increasing_timestamps_allowed(self):
+        data = output().splitlines(keepends=True)
+        data[1] = data[1].replace(b"T01:01:01", b"T01:01:02")
+        data[2] = data[2].replace(b"T01:01:01", b"T01:01:03")
+        data[3] = data[3].replace(b"T01:01:01", b"T01:01:04")
+        data[4] = data[4].replace(b"T01:01:01", b"T01:01:05")
+        self.assertEqual(verify(b"".join(data))["tests"], 2)
+
+    def test_40_invalid_february_leap_day_rejected(self):
+        self.bad(output().replace(b"2026-11-09", b"2026-02-29"))
+
+
 if __name__ == "__main__":
     unittest.main()

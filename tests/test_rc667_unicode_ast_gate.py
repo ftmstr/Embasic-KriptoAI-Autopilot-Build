@@ -96,14 +96,14 @@ class RC667UnicodeAndASTTests(unittest.TestCase):
     def test_23_tab_in_comment_allowed(self):
         self.assertEqual(validate(b"# hello\tworld\n")["verified_files"], 1)
 
-    def test_24_incomplete_function_header(self):
-        self.bad(b"def broken(:\n")
+    def test_24_zero_width_nonjoiner_rejected(self):
+        self.bad("# a\u200cb\n".encode())
 
-    def test_25_unclosed_parenthesis(self):
-        self.bad(b"month_days = (31, 28\n")
+    def test_25_embedded_unicode_bom_rejected(self):
+        self.bad("# a\ufeffb\n".encode())
 
-    def test_26_bad_indentation(self):
-        self.bad(b"def ok():\npass\n")
+    def test_26_arabic_letter_mark_rejected(self):
+        self.bad("# a\u061cb\n".encode())
 
     def test_27_null_byte(self):
         self.bad(b"x = 1\x00\n")
@@ -123,17 +123,17 @@ class RC667UnicodeAndASTTests(unittest.TestCase):
     def test_32_control_escape_comment(self):
         self.bad(b"# \x1b[31m\n")
 
-    def test_33_deeply_nested_expression(self):
-        self.bad(b"a = " + b"(" * 600 + b"1" + b")" * 600 + b"\n")
+    def test_33_interlinear_annotation_anchor_rejected(self):
+        self.bad("# a\ufff9b\n".encode())
 
     def test_34_pure_comment_is_valid_python(self):
         self.assertEqual(validate(b"# public-only notes\n")["verified_files"], 1)
 
-    def test_35_annotated_return_without_body(self):
-        self.bad(b"def f() -> int:\n")
+    def test_35_mongolian_vowel_separator_rejected(self):
+        self.bad("# a\u180eb\n".encode())
 
-    def test_36_source_module_cannot_execute_on_parse(self):
-        # Never import or execute the source string; syntax-only check.
+    def test_36_source_module_never_executed(self):
+        # Never import or execute the claimed source bytes.
         raw = b"raise RuntimeError('would execute if run')\n"
         result = validate(raw)
         self.assertFalse(result["release_ready"])

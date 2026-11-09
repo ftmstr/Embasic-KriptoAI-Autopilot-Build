@@ -17,13 +17,13 @@ Both were event `push` with exact head SHA `23d9fff596960e99f87559fb3c9d2b4d52a9
 
 ## RC667 independent source-byte integrity investigation
 
-The RC666 `safe_public_ci/ci_source_byte_gate.py` verified canonical raw byte formats and externally expected SHA-256 plus Git blob SHA-1, but accepted valid UTF-8 that contains visually deceptive invisible control characters (such as Unicode bidirectional overrides/isolates and zero-width format marks), and accepted syntactically invalid Python sources. That was a concrete fail-closed gap: caller-controlled trusted digests do not independently prevent malicious source bytes.
+The RC666 `safe_public_ci/ci_source_byte_gate.py` verified canonical raw byte formats and externally expected SHA-256 plus Git blob SHA-1, but accepted valid UTF-8 that contains visually deceptive invisible control characters (such as Unicode bidirectional overrides/isolates and zero-width format marks), . Python syntax validation is explicitly outside the source-byte gate: caller-controlled trusted digests do not independently prevent malicious source bytes.
 
 RC667 modifies **only this Public synthetic guard** to:
-- Reject Unicode General Category `Cf` (format/invisible including bidi), `Cc` other than LF/tab, `Zl` and `Zp`, while allowing ordinary Turkish text and combining diacritics.
-- Run `ast.parse(..., mode="exec")` on decoded source without importing or executing the represented Python program, rejecting SyntaxError, ValueError, RecursionError, MemoryError.
+- Reject invisible/non-printable Unicode source characters via the built-in `str.isprintable()` (except permitted LF/tab). This includes bidi controls, zero-width characters, C1 controls and Unicode separators, while retaining normal Turkish UTF-8 and combining diacritics.
+- **No AST import or compile:** existing Public `tests/test_guard.py` prohibits both adding an `ast` source-module import and calling `compile`. The validator is a **byte-consistency and display-control** gate, not a Python syntax, semantic safety or execution validator; do not weaken the Public import/compile guards.
 - Preserve the original exact-byte SHA-256 / Git blob SHA-1 check, canonical paths, UTF-8, LF and byte-size bounds; none of these claims independently authenticate GitHub, the source repository, a cryptographic signature or signer.
-- `tests/test_rc667_unicode_ast_gate.py`: **36 original invented-input tests** targeting bidi, zero-width, Unicode separators, malformed source, deep nesting, valid Turkish UTF-8 and required nonproduction status.
+- `tests/test_rc667_unicode_ast_gate.py`: **36 original invented-input tests** targeting bidi/zero-width/C1/Unicode separators, valid Turkish UTF-8, non-execution and required nonproduction status.
 
 ## RC667 synthetic hosted log postlude investigation
 
@@ -39,8 +39,8 @@ RC667 modifies only the offline validator:
 
 - Actual local runtime **CPython 3.13.5**, `PYTHONPATH=/mnt/data/kripto_tur24 python -m unittest discover -s /mnt/data/kripto_tur24/tests -p 'test_rc667*.py' -q`: **52/52 PASS** (36 source + 16 log), `python -m compileall -q /mnt/data/kripto_tur24`: PASS.
 - Git source blobs matched local-tested byte-identities:
-  - `safe_public_ci/ci_source_byte_gate.py`: `dedd451de174ff5c7b525be8047ae5fd23b697d1` (before final small explanatory comment, if any).
-  - `tests/test_rc667_unicode_ast_gate.py`: `f5922de9219e93f3b2adf7829c04b3e85d956306`.
+  - `safe_public_ci/ci_source_byte_gate.py`: `7836fb3a4550d6aa5d56bac50afa9afb40017f66` (final source comment, before exact-SHA CI).
+  - `tests/test_rc667_unicode_ast_gate.py`: `19e7700b88b4690465e12e36562b2639d0e9fe99`.
   - `safe_public_ci/ci_hosted_unittest_log_gate.py`: `8cafa56b76d4abeefd72271f0704ce288813a23d`.
   - `tests/test_rc667_hosted_footer_adversarial.py`: `9c815e7ed5bd3e0dc6a0f29734ff07b6e64440cd`.
 - **Expected full combined native hosted CI: 607 tests/OS** = RC666 555 + RC667 52. Never claim exact-SHA RC667 Windows/Ubuntu success without fetching each new run, job, step and raw log. Workflow `push` path filters are preserved.
@@ -56,6 +56,12 @@ RC667 modifies only the offline validator:
 
 1. Recheck Draft PR #7 final RC667 SHA and Public main/Private boundaries. Query native `push` GitHub Actions via `/actions/runs?head_sha=<exact_sha>&event=push` and validate actual Ubuntu and Windows job/step/full logs. **607/607** is an expectation until confirmed.
 2. Verify all changed Git blobs against locally tested byte hashes; do not repeat TUR22 transfer mismatch.
-3. Test Unicode security treatment for legitimate source comments, inspect `ast.parse` CPU/resource bounds, and explore defenses against spoofing of CI metadata beyond caller-supplied hashes. Keep all provenance claims not-authenticated without independent authorized trust.
+3. Test Unicode security treatment for legitimate source comments, independently examine how to add Python syntax checks **without changing existing import or compile restrictions**, and strengthen authentication of CI metadata beyond caller-supplied hashes. Keep all provenance claims not-authenticated without independent authorized trust.
 4. PR #1's 18 tests require separate independent review and express approval before integration; no main/Private merge, no live execution, no release.
 
+
+## Interim CI failures and explicit non-bypass repair
+
+1. The initial RC667 source commit `19052ba2eb4531ea33499d2a9ae9bfd625b176d0` triggered Ubuntu [run 42598477581](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/42598477581): **607 tests, FAILED (failures=1)**. Original Public `test_guard.GuardTests.test_import_whitelist` rejected the newly introduced source-module `ast` import. The import whitelist was deliberately NOT relaxed and workflow security was unchanged.
+2. In intermediate source commit `b28b14313093673e1285e6a73b1a8e033d4f843f`, the source switched to built-in `str.isprintable()` but its following test-only changes had not yet landed. Ubuntu [run 42598808692](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/42598808692) reported **607 tests, FAILED (failures=5)**, all tests expecting now-unavailable source syntax validation. The 36 source tests were corrected in commit `3afe91762522369130391686e4c82282f7446612`, and the local CPython 3.13.5 full RC667 subset returned **52/52 PASS**. The final post-report source commit is intentionally required to trigger the unchanged safe push workflow paths and to collect exact-final-SHA hosted CI evidence.
+3. `tests/test_guard.py` and all CI workflow permission/filter files remain unchanged. These failed runs are recorded transparently and are **not** counted as PASS or as evidence of release readiness.

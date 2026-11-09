@@ -152,5 +152,20 @@ class RC666ByteGateTests(unittest.TestCase):
         self.reject(expected=((A, c[0][1]), c[1]))
 
 
+    def test_33_ascii_del_rejected(self):
+        self.reject(((A, b"pass\x7f\n"),))
+
+    def test_34_form_feed_rejected(self):
+        self.reject(((A, b"pass\x0c\n"),))
+
+    def test_35_tab_indentation_allowed(self):
+        raw = b"if True:\n\tpass\n"
+        self.assertEqual(verify(((A, raw),))["verified_files"], 1)
+
+    def test_36_valid_utf8_source_allowed(self):
+        raw = "# Türkçe açıklama\n".encode("utf-8")
+        self.assertEqual(verify(((A, raw),))["verified_files"], 1)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -41,7 +41,7 @@ def _stamp_ok(m):
             0 <= minute <= 59 and 0 <= sec <= 59):
         return False
     leap = y % 4 == 0 and (y % 100 != 0 or y % 400 == 0)
-    month_days = (31, 29 if leap else 28, 31, 30, 31, 30, 31, 31, 30, 31)
+    month_days = (31, 29 if leap else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     return 1 <= day <= month_days[mo - 1]
 
 

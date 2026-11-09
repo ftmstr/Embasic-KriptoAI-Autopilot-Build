@@ -75,10 +75,15 @@ def verify_synthetic_unittest_roster(log, *, trusted_log_sha256,
     pending = None
     state = "tests"
     summary_count = None
+    last_timestamp = ""
     for line in lines:
         stamp = _STAMP.match(line)
         if stamp is None or not _valid_stamp(stamp):
             raise RosterRejected("bad GitHub-hosted timestamp")
+        stamp_text = line[:stamp.end() - 1]
+        if stamp_text < last_timestamp:
+            raise RosterRejected("nonmonotone GitHub-hosted timestamps")
+        last_timestamp = stamp_text
         payload = line[stamp.end():]
         m = _TEST.fullmatch(payload)
         s = _START.fullmatch(payload)

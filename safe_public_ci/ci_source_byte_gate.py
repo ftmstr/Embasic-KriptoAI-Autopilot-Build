@@ -4,11 +4,9 @@ The caller MUST authenticate expected commit and hashes independently.
 Git blob SHA-1 and SHA-256 consistency is not a signed provenance claim.
 This module has no filesystem, network, trading, or publishing capability.
 """
-import ast
 import hashlib
 import hmac
 import re
-import unicodedata
 
 
 class SourceByteRejected(ValueError):
@@ -42,17 +40,10 @@ def _validate_utf8_python(raw):
     if (raw.startswith(b"\xef\xbb\xbf") or not raw.endswith(b"\n") or
             any(ch < 32 and ch not in (9, 10) or ch == 127 for ch in raw)):
         raise SourceByteRejected("noncanonical source encoding or newline")
-    # UTF-8 alone is not a safe display format: forbid invisible bidirectional,
-    # format and alternate-line-separator characters even inside comments.
-    if any(unicodedata.category(ch) in ("Cf", "Zl", "Zp") or
-           (unicodedata.category(ch) == "Cc" and ch not in ("\t", "\n"))
-           for ch in source):
+    # Never load additional libraries or execute/compile claimed source code.
+    # Reject invisible Unicode formatting, bidirectional and separator controls.
+    if any(ch not in ("\t", "\n") and not ch.isprintable() for ch in source):
         raise SourceByteRejected("unsafe Unicode source controls")
-    # Static syntax checking is a validation guard, not proof of safe behavior.
-    try:
-        ast.parse(source, mode="exec")
-    except (SyntaxError, ValueError, RecursionError, MemoryError) as exc:
-        raise SourceByteRejected("invalid Python syntax") from exc
 
 
 def verify_public_source_byte_claims(files, *, expected_commit_sha, trusted_claims):

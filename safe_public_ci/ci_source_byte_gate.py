@@ -37,8 +37,8 @@ def _validate_utf8_python(raw):
         raw.decode("utf-8", "strict")
     except UnicodeError as exc:
         raise SourceByteRejected("invalid source encoding") from exc
-    if (raw.startswith(b"\xef\xbb\xbf") or b"\r" in raw or b"\x00" in raw or
-            b"\x1b" in raw or not raw.endswith(b"\n")):
+    if (raw.startswith(b"\xef\xbb\xbf") or not raw.endswith(b"\n") or
+            any(ch < 32 and ch not in (9, 10) or ch == 127 for ch in raw)):
         raise SourceByteRejected("noncanonical source encoding or newline")
 
 

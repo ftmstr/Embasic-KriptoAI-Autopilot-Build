@@ -3,6 +3,7 @@
 All events are invented, caller-supplied claims, not a real atomic store, signed
 ledger, GitHub provenance, real runner evidence, or permission to release/trade.
 The source uses only authorized stdlib; it performs no IO or dynamic execution.
+This check is NOT a CAS implementation, an authenticated ledger or a signature verifier.
 """
 import hashlib
 import hmac

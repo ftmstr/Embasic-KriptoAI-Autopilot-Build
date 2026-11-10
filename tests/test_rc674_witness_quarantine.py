@@ -60,7 +60,7 @@ def _replace_provider(e, index, field, value):
     reports = list(e["provider_claims"])
     item = list(reports[index])
     item[field] = value
-    reports[index] = tuple(reports)
+    reports[index] = tuple(item)
     e["provider_claims"] = tuple(reports)
 
 

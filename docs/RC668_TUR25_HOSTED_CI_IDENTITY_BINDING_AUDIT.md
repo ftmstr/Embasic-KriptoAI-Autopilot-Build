@@ -54,3 +54,12 @@ Owner Public Build publication acceptance list remains **5/10 = 50%**, not tradi
 ## 5. TUR 26 next-turn handoff
 
 Verify final RC668 Draft PR #7 head and two native `push` CI runs by **exact head SHA**; check each job, all step results and full unittest logs (647/647 expected, not presumed). Then examine attack surface in receipt mapping to provider JSON, identity/step allowlists and independent out-of-band trust roots; add original fail-closed tests without workflow permission changes. Keep all Private/main/merge/release/trading/model/return locks unchanged.
+
+## 6. Verified first full native RC668 hosted CI
+
+Native GitHub Actions `push` run metadata, job objects, nine step outcomes and original verbose job logs were fetched independently for source HEAD `f8a136bfa7aa39b75381487f7c6f4447facece5b`.
+
+- [Ubuntu #42769108722](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/42769108722), job `129672466361`: `completed/success`, 9/9 steps success, `Ran 647 tests` + `OK`, exactly 647 positive test rows including all 40 original RC668 tests.
+- [Windows #42769108496](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/42769108496), job `129672462760`: `completed/success`, 9/9 steps success, `Ran 647 tests` + `OK`, exactly 647 positive rows including 40 RC668 tests.
+- Both run records report `head_sha=f8a136bfa7aa39b75381487f7c6f4447facece5b`, event `push` and attempt 1. Test statuses are **synthetic CI evidence only**. The new offline pairing guard was exercised on 40 invented fixtures and is not a provenance signature or proof of authenticated GitHub source.
+- Updating this report advances the branch HEAD. A final harmless source-only documentation comment will trigger existing, unchanged `push` workflow path filters, and final HEAD CI must be reverified **independently**; do not transpose these run IDs to a later commit.

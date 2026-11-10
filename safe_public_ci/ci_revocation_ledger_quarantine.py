@@ -19,6 +19,7 @@ _H64 = re.compile(r"[0-9a-f]{64}\Z")
 _ID = re.compile(r"[a-z][a-z0-9_-]{0,31}\Z")
 _REPO = "ftmstr/Embasic-KriptoAI-Autopilot-Build"
 _BRANCH = "validation/rc654-pr1-rc653-combined-ci"
+# External revocation histories and CAS outcomes MUST be authenticated elsewhere.
 _DOMAIN = "RC675-PUBLIC-REVOCATION-LEDGER-V1"
 _MAX_NUM = (1 << 63) - 2
 _MAX_SEEN = 1024

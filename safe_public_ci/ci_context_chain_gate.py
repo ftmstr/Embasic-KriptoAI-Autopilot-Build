@@ -18,6 +18,7 @@ _SHA64 = re.compile(r"[0-9a-f]{64}\Z")
 _AUTHORITY = re.compile(r"[a-z][a-z0-9_-]{0,31}\Z")
 _REPO = "ftmstr/Embasic-KriptoAI-Autopilot-Build"
 _BRANCH = "validation/rc654-pr1-rc653-combined-ci"
+# Root rotation needs external authorization; this module never accepts it.
 _DOMAIN = "RC672-PUBLIC-CONTEXT-CHAIN-V1"
 _FIELDS = (
     "repository", "branch", "git_sha", "source_sha256", "workflow_sha256",

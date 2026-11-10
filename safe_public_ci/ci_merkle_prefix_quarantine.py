@@ -17,6 +17,7 @@ _H64 = re.compile(r"[0-9a-f]{64}\Z")
 _NAME = re.compile(r"[a-z][a-z0-9_]{0,31}\Z")
 _REPO = "ftmstr/Embasic-KriptoAI-Autopilot-Build"
 _BRANCH = "validation/rc654-pr1-rc653-combined-ci"
+# The caller-provided Merkle root is NEVER authenticated by this module.
 _ROLES = ("owner", "independent_reviewer", "incumbent_custodian")
 _PLATFORMS = ("ubuntu", "windows")
 _META = ("repository", "branch", "git_sha", "source_sha256", "workflow_sha256",

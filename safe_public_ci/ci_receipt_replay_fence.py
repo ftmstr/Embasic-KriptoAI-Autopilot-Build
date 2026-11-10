@@ -42,6 +42,7 @@ def verify_synthetic_receipt_replay(
     Receipts: (("ubuntu", run_id, job_id, SHA, log_SHA256, roster_SHA256),
                ("windows", run_id, job_id, SHA, log_SHA256, roster_SHA256)).
     No caller-supplied history is assumed authentic; never mutates the history.
+    Fail-closed only against *supplied* history, not an atomic external ledger.
     Successful output is only NOT_REPLAYED_AGAINST_SUPPLIED_HISTORY, never a
     proof of authenticity or a guarantee against replay on later invocations.
     """

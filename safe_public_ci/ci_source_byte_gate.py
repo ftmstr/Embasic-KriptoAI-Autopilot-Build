@@ -19,6 +19,11 @@ _PUBLIC_PY = re.compile(r"(?:safe_public_ci|tests)/[a-z][a-z0-9_]*\.py\Z")
 _MAX_FILES = 24
 _MAX_FILE_SIZE = 131072
 _MAX_TOTAL = 524288
+_MAX_PATH_LENGTH = 128
+# Windows interprets these device names as reserved even with a .py suffix.
+_WIN_DEVICES = frozenset(("con", "prn", "aux", "nul") +
+                         tuple("com" + str(n) for n in range(1, 10)) +
+                         tuple("lpt" + str(n) for n in range(1, 10)))
 
 
 def git_blob_sha1(raw):
@@ -29,7 +34,9 @@ def git_blob_sha1(raw):
 
 
 def _validate_path(path):
-    return type(path) is str and _PUBLIC_PY.fullmatch(path) is not None
+    return (type(path) is str and len(path) <= _MAX_PATH_LENGTH and
+            _PUBLIC_PY.fullmatch(path) is not None and
+            path.rsplit("/", 1)[-1].split(".", 1)[0] not in _WIN_DEVICES)
 
 
 def _validate_utf8_python(raw):

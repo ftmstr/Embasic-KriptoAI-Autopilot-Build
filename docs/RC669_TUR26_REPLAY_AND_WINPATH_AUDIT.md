@@ -53,3 +53,13 @@ The pre-existing RC668 `ci_hosted_pair_identity_gate.py` checks two locally supp
 ## 6. Next adversarial focus
 
 For TUR 27, verify the final RC669 SHA and both native OS logs. Audit atomic external replay-history update, lost-ACK and parallel-read replay races and provider identity trust. A pure function cannot provide authoritative authentication or durable single-use consumption. Keep all original source, CI permission/compile/import and no-live locks, do not integrate PR #1 without explicit independent approval.
+
+## 7. Final-code native dual-host CI readback
+
+- Source/test code HEAD `309a3829a334e8cd101c99d48ac8e78967eab067`: native GitHub `push` events on exactly this commit were independently fetched, including run object, hosted job, 9 step summaries and original full job text. The full suite has **693** cases per OS (previous 647 + 32 replay + 14 Windows path adversarial tests).
+- **Ubuntu**: [run #42795172611](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/42795172611), job `129758404921`; run/job `completed/success`, **9/9** successful steps, 693 verbose `... ok` test lines, exactly **32** `test_rc669_replay_fence` and **14** `test_rc669_cross_platform_paths` rows, `Ran 693 tests`, `OK`.
+- **Windows**: [run #42795172673](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/42795172673), job `129758405517`; the **same exact code SHA**, run/job `completed/success`, **9/9** successful steps, 693 verbose `... ok` lines, 32 + 14 RC669 cases, `Ran 693 tests`, `OK`.
+- Source and three related test/guard file blob SHAs were re-read from GitHub at the code HEAD; **4/4** matched the locally tested bytes. The final small replay-source docstring change has Git blob SHA `8a70c772b7f121e6e0cb32ff7600cbbd370d3395` and SHA-256 `54d8820a4c4862b23a5215a8f8481cfd523a6f55ff2bc9701ce73adaea8d7da2`; local **46/46 PASS** after this change.
+- Updating this report changes the branch HEAD; the preceding results do **not** certify a subsequent commit. Existing unchanged safe `push` filters require a follow-up source-only comment commit for final-HEAD CI. Its final run/job/step/log evidence must be separately checked, not copied from this record.
+
+**Remaining hard NO-GO:** Github-origin authentication, independent signed receipt / durable append-only replay journal with atomic consumption and multi-writer conflict control, PR #1 independent approval, actual signed platform packages, owner-approved security/license/SBOM and deployment acceptance. No trading, model fit or financial return testing was done.

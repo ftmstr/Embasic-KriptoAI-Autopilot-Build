@@ -77,6 +77,7 @@ def verify_synthetic_receipt_replay(
         if log_hash in trusted_seen_log_sha256:
             raise ReplayFenceRejected("log already consumed in trusted prior evidence")
     # All fields are bounded ASCII tokens. Versioned length-unambiguous tuple.
+    # External consumption of this fingerprint MUST be atomic across writers.
     fields = (
         "RC669-REPLAY-FENCE-V1", expected_sha,
         str(expected_run_ids[0]), str(expected_job_ids[0]),

@@ -51,7 +51,7 @@ def verify_synthetic_hosted_pair(receipts, *, expected_sha, expected_run_ids,
                                   expected_roster_sha256, expected_tests):
     """Pair two completed synthetic CI receipts against independent expectations.
 
-    This is a *consistency* gate, not a Github or signature authentication gate.
+    This is a *consistency* gate, not a GitHub or signature authentication gate.
     Each receipt has platform, run, job, steps, raw_log and log_check fields.
     Actual provider provenance and permissions need independent verification.
     """

@@ -20,6 +20,7 @@ _REPO = "ftmstr/Embasic-KriptoAI-Autopilot-Build"
 _BRANCH = "validation/rc654-pr1-rc653-combined-ci"
 _ROLES = ("owner", "independent_reviewer", "incumbent_custodian")
 _OS = ("ubuntu", "windows")
+# A matching caller-controlled history is NOT a transactional write.
 _MAX = (1 << 63) - 2
 _FIELDS = (
     "repository", "branch", "git_sha", "source_sha256", "workflow_sha256",

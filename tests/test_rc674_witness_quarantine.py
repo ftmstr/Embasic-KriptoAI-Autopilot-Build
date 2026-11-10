@@ -61,6 +61,7 @@ def _replace_provider(e, index, field, value):
     item = list(reports[index])
     item[field] = value
     reports[index] = tuple(reports)
+    e["provider_claims"] = tuple(reports)
 
 
 class RC674WitnessAdversarialTests(unittest.TestCase):

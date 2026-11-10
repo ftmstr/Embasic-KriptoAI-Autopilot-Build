@@ -5,6 +5,7 @@ provide transactional CAS, durable histories, monotonic revisions and an
 independent authenticated readback. Returning a consistent observation does
 not prove a commit, an ACK, GitHub origin or safe financial deployment.
 No file/network access, no dynamic Python evaluation and no state mutation.
+An untrusted matching readback never authorizes a release or trading.
 """
 import hashlib
 import hmac

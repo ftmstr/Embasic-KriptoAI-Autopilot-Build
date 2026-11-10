@@ -31,6 +31,7 @@ _STEPS = {
         "Post Checkout Public Build without credentials", "Complete job",
     ),
 }
+# Source/run authenticity is checked outside this offline consistency layer.
 _LOG_MARKER = "HOSTED_LOG_STRUCTURE_ONLY_NOT_AUTHENTICATED"
 
 

@@ -252,3 +252,6 @@ def quarantine_signed_checkpoint(claim, trust, signature_hex, *, expected_transc
         "release_ready": False,
         "live_trading_allowed": False,
     }
+
+# RC682 publication gate: mathematical signature validity is not authority.
+# Caller-controlled anchor provenance, provider evidence and CAS stay NO-GO.

@@ -206,10 +206,28 @@ class RC656SnapshotTests(unittest.TestCase):
         permitted["README.md"] = (ROOT / "README.md").read_bytes()
         permitted["PUBLICATION_GATE.md"] = (ROOT / "PUBLICATION_GATE.md").read_bytes()
         self.assertGreater(len(permitted), 4)
-        archive, manifest = build_synthetic_snapshot(
-            permitted, source_commit=SOURCE_COMMIT, rollback_commit=ROLLBACK_COMMIT)
-        self.assertTrue(verify(archive, manifest))
-        self.assertLess(len(archive), 524288)
+        # The public source tree can grow beyond MAX_ENTRIES. Preserve the
+        # immutable package bound: the full oversized request MUST reject.
+        # Then verify every public source in deterministic bounded batches,
+        # never claim the batches form one authenticated atomic snapshot.
+        if len(permitted) > MAX_ENTRIES:
+            with self.assertRaises(SnapshotRejected):
+                build_synthetic_snapshot(
+                    permitted, source_commit=SOURCE_COMMIT,
+                    rollback_commit=ROLLBACK_COMMIT)
+        rows = sorted(permitted.items())
+        observed_paths = set()
+        for start in range(0, len(rows), MAX_ENTRIES):
+            batch = dict(rows[start:start + MAX_ENTRIES])
+            self.assertLessEqual(len(batch), MAX_ENTRIES)
+            archive, manifest = build_synthetic_snapshot(
+                batch, source_commit=SOURCE_COMMIT,
+                rollback_commit=ROLLBACK_COMMIT)
+            self.assertTrue(verify(archive, manifest))
+            self.assertLess(len(archive), 524288)
+            self.assertTrue(observed_paths.isdisjoint(batch))
+            observed_paths.update(batch)
+        self.assertEqual(observed_paths, set(permitted))
 
 
 if __name__ == "__main__":

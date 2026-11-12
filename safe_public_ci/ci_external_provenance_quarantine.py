@@ -173,3 +173,6 @@ def quarantine_provenance(claim, pinned):
         "release_ready": False,
         "live_trading_allowed": False,
     }
+
+# TUR41 final gate: mathematical equality of caller pins is not trusted origin.
+# Independent signer, provider, monotonic storage and ACK proof remain NO-GO.

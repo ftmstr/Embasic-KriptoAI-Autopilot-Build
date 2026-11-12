@@ -284,3 +284,6 @@ def compare_quarantined_claims(first, second):
     if left != right:
         return "CLAIMED_TRANSCRIPT_FORK_ORIGIN_UNAUTHENTICATED"
     return "EQUAL_CALLER_SUPPLIED_CLAIMS_ORIGIN_UNAUTHENTICATED"
+
+# RC687 final gate: independently *named* owners, observers and providers are
+# still untrusted caller assertions; no AUTHENTICATED, LIVE or durable-CAS path.

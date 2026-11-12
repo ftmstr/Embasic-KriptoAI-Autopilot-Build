@@ -247,3 +247,7 @@ def quarantine_inclusion(claim, pins):
         "release_ready": False,
         "live_trading_allowed": False,
     }
+
+# RC686 final acceptance barrier: mathematical inclusion is not provider origin.
+# Two caller-named witnesses and local SQLite tests cannot authorize LIVE,
+# certify out-of-band signer keys, or supply a durable external CAS anchor.

@@ -227,9 +227,12 @@ def connect(path):
 
 
 def setup(path):
-    with connect(path) as db:
+    db = connect(path)
+    try:
         db.executescript(SCHEMA)
         db.execute('INSERT INTO state(id,generation,root) VALUES(1,3,?)', (OLD_ROOT,))
+    finally:
+        db.close()
 
 
 def cas(path, expected_gen, expected_root, desired_root, nonce, lost_ack=False, rollback=False):
@@ -340,9 +343,12 @@ class RC684DisposableSQLite(unittest.TestCase):
 
     def test_14_external_db_admin_rollback_still_unprotected(self):
         self.assertEqual(cas(self.path,3,OLD_ROOT,NEW_ROOT,'nonce-o'),'COMMITTED')
-        with connect(self.path) as db:
+        db = connect(self.path)
+        try:
             db.execute('DELETE FROM used')
             db.execute('UPDATE state SET generation=3,root=? WHERE id=1',(OLD_ROOT,))
+        finally:
+            db.close()
         # Correctly exposes the missing independent monotonic trust root.
         self.assertEqual(cas(self.path,3,OLD_ROOT,'f'*64,'nonce-o'),'COMMITTED')
 

@@ -39,7 +39,7 @@ Actual **CPython 3.13.5**, local source/test after the final explanatory comment
 ```bash
 PYTHONWARNINGS=error PYTHONPATH=/mnt/data/kripto_tur42 \
   python3 -m unittest discover -s /mnt/data/kripto_tur42/tests -p 'test_rc685*.py' -q
-# Ran 127 tests in 3.692s — OK (127/127), no ResourceWarning.
+# Ran 127 tests in 3.633s — OK (127/127), no ResourceWarning.
 python3 -m compileall -q /mnt/data/kripto_tur42/safe_public_ci /mnt/data/kripto_tur42/tests
 # PASS
 ```
@@ -47,7 +47,7 @@ Final module AST imports exactly `hashlib,hmac,re`, prohibited calls zero. Local
 
 | File | Tested Git blob SHA-1 | Raw SHA-256 |
 |---|---|---|
-| `safe_public_ci/ci_independent_origin_quarantine.py` (FINAL) | `368e703c9f63990a19815efa3173a89aea17ad24` | `273e664162831856bf71c6020432fe76940ae58aeadb245cc4e10e332dbd1e9c` |
+| `safe_public_ci/ci_independent_origin_quarantine.py` (FINAL) | `e63e473f1a8ba7a534a3760d26005fa287f4dd8c` | `fd2d768d3042ec089d3f4cdf6345ab79794b2d9d6ec48f9849192d2bfed74e0c` |
 | `tests/test_rc685_witness_and_sqlite.py` (FINAL) | `b7b22f5a9406e9de19b70d24a90ac779d5c8d7ba` | `2a940bbd405839a66c21bd69169f26303e8e5443943803e5a6645ec57fd880b4` |
 
 The tests and the pre-final source were both exactly byte-matched via the GitHub Contents API to their local Git blobs before this report. Final source requires independent **final-HEAD** GitHub readback after final code commit. Incomplete/incorrect byte identity must cause FAIL-CLOSED STOP, not acceptance.
@@ -62,3 +62,18 @@ Historical RC684 1731 + RC685 127 = **1858 expected unittest cases per OS** on t
 - No release, real exchange orders, financial gain claim, model fitting, production server, automatic PR merge or interaction with Private repo. Public main, existing workflow triggers/permissions, safe import/call whitelist and PR #1's approval-gated 18 tests untouched. Preserve historic PR #7 body archive and all RC669–RC684 documentation.
 - Native end-user Windows/Ubuntu/server application acceptance **0/3**. Previously reported publication checklist **5/10=50%**, unrelated to algorithmic completeness or return.
 - For TUR43, prioritize actual independently distributed public key/trust-anchor provenance, real signing/approval rights and revocation time, provider-signed source log verification, immutable external checkpoint, and **application-integrated** CAS under crash/restart, snapshot restore and lost ACK. Preserve permanent NO-GO until verified.
+
+
+## 5A. Honest first-CI failure, source-count counterexample and fail-closed repair
+
+**Initial exact-HEAD `fd69cf4c6054153783d2ef706b49e678f39635ee` is NOT PASS.** Two real native runs completed **failure** with all 127 new RC685 cases individually successful, but one older test rejected 33 input files:
+- Ubuntu [run #43266074902](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/43266074902), job `131349857300`: `Ran 1858 tests`, `FAILED (errors=1)`.
+- Windows [run #43266074901](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/43266074901), job `131349857045`: `Ran 1858 tests`, `FAILED (errors=1)`.
+- Both original logs identify `test_rc656_snapshot_package.RC656SnapshotTests.test_integrity_actual_public_source_files_without_export` and `safe_public_ci.snapshot_package.SnapshotRejected: invalid synthetic-only source count`.
+- Exact original source tree: **31 safe_public_ci Python files + README.md + PUBLICATION_GATE.md = 33**, exceeding immutable `snapshot_package.MAX_ENTRIES = 32`.
+
+**Correction without weakening a safety gate:** updated ONLY the old synthetic snapshot *test* `tests/test_rc656_snapshot_package.py` (new blob `a204b529bb7cd9fa29a9a59c8e0a81c1b96ddf05`). It now first asserts an all-in-one oversized Public input is **REJECTED**, then verifies every Public source byte in deterministic nonoverlapping batches of **at most 32** using the existing unchanged source/ZIP/manifest/verification pipeline. It requires the exact full original set of paths to be covered and each bounded archive to verify. These are **separate** synthetic snapshots, NEVER misrepresented as one authenticated atomic release.
+
+The `snapshot_package.py` engine, MAX_ENTRIES=32, MAX_TOTAL and security semantics, CI workflow triggers/permissions and source import/call bans are unchanged. Initial failure records are retained, not overwritten. Updated RC685 source merely adds final NO-AUTH/32-entry explanatory comments (no execution changes), locally rerun 127/127 with `PYTHONWARNINGS=error`, `compileall PASS`, Git SHA-1 and SHA-256 in the table above, before the final same-HEAD push.
+
+**Final CI is still a SEPARATE required gate:** Do not call TUR42 native 1858/1858 PASS until real new final-HEAD Ubuntu and Windows run/job/9 steps/original full log independently verify. Report/PR addendum should append those actual results without further commits to the final tested source.

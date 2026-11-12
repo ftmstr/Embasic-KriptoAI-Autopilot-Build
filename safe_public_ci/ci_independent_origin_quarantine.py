@@ -241,3 +241,5 @@ def quarantine_witness_origin(claim, pinned):
 
 # RC685 final fail-closed acceptance: no external signer/provider origin is
 # authenticated; claims and two local SQLite copies cannot prove durable CAS.
+# The RC656 synthetic snapshot keeps its 32-entry limit; public source audits
+# must partition larger checkouts rather than weaken that strict bound.

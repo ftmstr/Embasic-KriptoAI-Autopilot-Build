@@ -238,3 +238,6 @@ def quarantine_witness_origin(claim, pinned):
         "release_ready": False,
         "live_trading_allowed": False,
     }
+
+# RC685 final fail-closed acceptance: no external signer/provider origin is
+# authenticated; claims and two local SQLite copies cannot prove durable CAS.

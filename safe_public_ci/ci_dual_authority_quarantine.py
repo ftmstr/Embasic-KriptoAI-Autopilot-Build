@@ -296,3 +296,6 @@ def audit_dual_authority(claim, signatures, pinned):
         "release_ready":False,
         "live_trading_allowed":False,
     }
+
+# TUR40 final gate: caller-controlled pins are never authenticated authority.
+# No release, real exchange, model fit, durable CAS or resolved ACK is implied.

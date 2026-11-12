@@ -42,8 +42,8 @@ Python AST source import audit \`hashlib, hmac, re\` only; banned direct calls \
 
 | Locally tested exact new artifact | Git blob SHA-1 | raw SHA-256 |
 |---|---|---|
-| \`safe_public_ci/ci_external_provenance_quarantine.py\` | \`92a0cb3e6aaad10a1bf7ec6ffa4ceddbfa90d8ab\` | \`fd169c5d3b510a45fb5fd3e5cbba394d78184d9d698139fe67650b948162ee55\` |
-| \`tests/test_rc684_provenance_and_sqlite.py\` | \`b9022730b03f3105a0edc485af32c255b2dd78e9\` | \`5aa928739d1bc831c6d18a73db568b715d5dafe435472e83aa18d9aa1c94aa52\` |
+| \`safe_public_ci/ci_external_provenance_quarantine.py\` | \`9ed299d4e9547967d803fc3e6c98215336ddab9a\` | \`3962e44647f40094c141808dbb74a6bff37212b1fa866f90a9e8bbc2bb7a2914\` |
+| \`tests/test_rc684_provenance_and_sqlite.py\` | \`1b3edad07abc4291e775b7682d729ba1f67c9bf0\` | \`9b74b383b2b03515b405252f626b838160b82a00a093f14392e437cc4202c491\` |
 
 GitHub exact-byte readback for **2/2** files was independently confirmed after Public validation writes. Any final source-only edit requires another local run and final blob readback. Temporary staging Library copies were removed after upload; no Private repo touched.
 
@@ -64,3 +64,17 @@ Log unavailable, stale SHA, queued, no-job, in_progress, incomplete step or miss
 - Native user-facing Windows/Ubuntu/server product acceptance remains 0/3; previously documented owner publication checklist 5/10=50% is **not** whole-product readiness, cryptographic attestation or return.
 - The needed independent cryptographic **real** key-origin distribution, owner/reviewer authority, authentic signed revocation ledger/time, GitHub provider origin attestations, externally committed Merkle checkpoint, app-integrated multi-process persistent transactional CAS, external anti-rollback and lost ACK reconciliation remain **unverified**.
 - **TUR42 priority:** verify externally distributed immutable real trust anchor and signer authorization without self-pins; obtain genuine provider-signed artifact provenance; extend crash/restart tests to an app-integrated disposable service with independently durable monotonic anchor (explicit NO-GO if absent); preserve all NO-LIVE gates.
+
+
+## 3A. Final local correction / warning gate
+
+After the initial passing 94-case test run, a \`ResourceWarning\` revealed that some SQLite helper connections were committed but not explicitly closed. \`setup()\` and the adversarial administrative rollback helper were corrected to use \`try/finally: db.close()\`. The source-only end-of-file NO-GO comment was added; it changes no logic.
+
+The **final locally tested source and test file bytes** are the SHA-1 and SHA-256 values in the table above. Final pre-upload verification used:
+\`\`\`sh
+PYTHONWARNINGS=error PYTHONPATH=/mnt/data/kripto_tur41 python3 -m unittest discover -s /mnt/data/kripto_tur41/tests -p 'test_rc684*.py' -q
+# Ran 94 tests in 2.405s -- OK, no ResourceWarning.
+python3 -m compileall -q /mnt/data/kripto_tur41/safe_public_ci /mnt/data/kripto_tur41/tests
+# PASS
+\`\`\`
+Any earlier pre-correction blob hashes are historical staging, not final acceptance identities. Hosted CI must run with the **final source SHA** and updated warning-free test file at the exact same commit.

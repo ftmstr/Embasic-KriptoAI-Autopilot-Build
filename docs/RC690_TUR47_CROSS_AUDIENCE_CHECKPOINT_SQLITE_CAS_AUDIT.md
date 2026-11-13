@@ -65,3 +65,12 @@ Baseline existing 2299 + new RC690 133 = **2432 expected tests per OS**. Trigger
 - **Corrected tested test-file blob SHA-1:** `19d26fd94e13872c9ddc0ac37f308e7f97b44b64`. **Corrected raw SHA-256:** `cdd3a33d4b54d9ebc6a49a12a88f44dbe09f29d5d97354c09f67dc591b105deb`. The identities in section 4 refer to the **first** unsuccessfully hosted attempt and are retained as historical evidence. The final successful tested file's identity is the corrected one here; verify exact GitHub readback.
 
 **A NEW final HEAD and TWO NEW complete real native CI runs remain mandatory**. No completed final CI is claimed by this document. Publish actual run IDs/jobs/9-step/full-log/2432 case acceptance as a post-CI PR #7 metadata addendum without modifying the successful HEAD.
+
+
+## 5B. Final source-head trigger without workflow changes
+
+Both native workflow files were explicitly inspected; each trigger's `push.paths` includes `safe_public_ci/**` but **does not** include `tests/test_rc690_audience_epoch_sqlite.py`. Therefore the fixed test-file-only commit `61cddd2a1a8df26e58ce516c6f7a74cb75f234c8` correctly produced no new native validation runs. Do not count absence of runs as a success. Instead a test-verified **comment-only** change in the RC690 safe module must be committed *last* to create an exact new tested HEAD that matches both unchanged workflow path filters. Do NOT relax/modify either workflow.
+
+Local finalized code file (after the safety-clarifying comment): tested Python3.13.5 **133/133 PASS**, `PYTHONWARNINGS=error`, `compileall PASS`, with no `PYTHONPATH`. Final **source Git blob SHA-1** `d5fcaf8cc00a0975b262f497cf6d221aaa66962a`, raw file **SHA-256** `5813408f4f319ba4c4dd23f080a8f7c14276b5975412ca420a3f1135e09170ae`, **14564 bytes**. Final test Git blob/SHA-256 in §5A remain `19d26fd94e13872c9ddc0ac37f308e7f97b44b64`/`cdd3a33d4b54d9ebc6a49a12a88f44dbe09f29d5d97354c09f67dc591b105deb`.
+
+Final hosted CI is a distinct gate: require new Ubuntu and Windows complete job log and 9/9 success **at the final source commit SHA**. A report/PR addendum is not a substitute for final native full-log verification.

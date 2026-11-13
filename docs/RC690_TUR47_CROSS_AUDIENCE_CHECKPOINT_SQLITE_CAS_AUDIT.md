@@ -48,3 +48,20 @@ Baseline existing 2299 + new RC690 133 = **2432 expected tests per OS**. Trigger
 ## 6. Prohibited promotion and TUR48 handoff
 
 `FINAL=SEALED`, `LIVE=DISABLED`, `SINGLE_FIT=UNUSED`, `+20% NET=NOT_TESTED`. End-user deployable Windows/Ubuntu/server independently verified: **0/3**. Genuine independent owner/reviewer key trust, signed provider origin, authority revocation/time and independent immutable CAS checkpoint: **0/4**. Previous owner publication checklist **5/10** (50%) is a distinct control, not application/strategy completion. No authenticated signing or live trading, no real exchange orders, no fit or profit assertion, no auto-merge, and no Private repository access. Preserve all previous PR7 audit archive and historic first-failure records. TUR48 should prioritize *actual independently administered public trust anchors and real provider attestation*, cryptographic signer verification under revocation, monotonic public checkpoints and application transaction integration; if missing, refuse promotion.
+
+
+## 5A. Actual first hosted CI failure — retained, never counted as PASS
+
+**First exact RC690 source HEAD `ab68517fd3a2172c583e872d997f8b6b60c16886` FAILED on both native hosts.** Do not erase or mislabel these run IDs:
+- **Ubuntu** [run #43495951082](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/43495951082) / real job `132128969821`, completed/**failure**. Original full log **413192 chars**, `Ran 2432 tests in 13.557s`, `FAILED (failures=5)`. The five RC690 SQLite child-process cases failed; child stderr in logs shows `ModuleNotFoundError: No module named 'safe_public_ci'`. 2427 passed but do **not** call this run 2432/2432 PASS.
+- **Windows** [run #43495950963](https://github.com/ftmstr/Embasic-KriptoAI-Autopilot-Build/actions/runs/43495950963) / real job `132128969762`, completed/**failure**. Original full log **424082 chars**, `Ran 2432 tests in 31.817s`, `FAILED (failures=5)`. Same five subprocess import errors; 2427 passing rows are *not* a successful final run.
+
+**Root cause:** launching `python <absolute-path-to-tests/test_rc690_audience_epoch_sqlite.py> --rc690-child` from hosted GitHub Actions changes Python's import search path to `tests/`, and the native child lacks the parent repository root. Local command with `PYTHONPATH` originally masked this gap. The test-only fix inserts precisely `Path(__file__).resolve().parents[1]` into `sys.path` BEFORE the safe package import. No source application code, import whitelist, main, workflows, credentials, test scopes or `MAX_ENTRIES=32` constraints change.
+
+**Revalidation of the fixed test file before upload:**
+- Python **3.13.5**, `PYTHONWARNINGS=error`; **133/133 PASS** from the repository root.
+- Run from **`/tmp` with `PYTHONPATH` entirely unset** and `-m unittest discover -s /mnt/data/kripto_tur47/tests -p 'test_rc690*.py'`: **133/133 PASS**; thus the original CI subprocess import-path failure is reproduced/resolved without workflow changes.
+- `python3 -m compileall -q safe_public_ci tests`: **PASS**. Banned runtime source imports/calls unchanged.
+- **Corrected tested test-file blob SHA-1:** `19d26fd94e13872c9ddc0ac37f308e7f97b44b64`. **Corrected raw SHA-256:** `cdd3a33d4b54d9ebc6a49a12a88f44dbe09f29d5d97354c09f67dc591b105deb`. The identities in section 4 refer to the **first** unsuccessfully hosted attempt and are retained as historical evidence. The final successful tested file's identity is the corrected one here; verify exact GitHub readback.
+
+**A NEW final HEAD and TWO NEW complete real native CI runs remain mandatory**. No completed final CI is claimed by this document. Publish actual run IDs/jobs/9-step/full-log/2432 case acceptance as a post-CI PR #7 metadata addendum without modifying the successful HEAD.

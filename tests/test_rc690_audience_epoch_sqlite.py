@@ -16,9 +16,14 @@ import tempfile
 import threading
 import unittest
 
-from safe_public_ci import ci_audience_epoch_quarantine as gate
-
+# Executing this TEST fixture in a child process sets sys.path[0] to tests/,
+# not the checked-out Public repository root. Resolve only this file's parent
+# to import the same safe-only module on hosted Ubuntu and Windows runners.
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from safe_public_ci import ci_audience_epoch_quarantine as gate
 SNAP_ROOT = hashlib.sha256(b"RC690-source").hexdigest()
 
 

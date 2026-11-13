@@ -262,3 +262,8 @@ def classify_views(left, right):
     if left == right:
         return "CLAIMED_EQUAL_VIEWS_NOT_AUTHENTICATED"
     return "CLAIMED_INCOMPARABLE_VIEWS_NOT_AUTHENTICATED"
+
+# RC690 hosted-final acceptance boundary: child process import normalization is
+# test-only; no authentic owner/provider/witness authority, immutable external
+# Merkle checkpoint, production multihost CAS, trusted time or signed ACK exists.
+# This source remains offline and refuses AUTHENTICATED, FINAL and LIVE status.

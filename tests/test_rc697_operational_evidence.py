@@ -12,7 +12,7 @@ ROOT=Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
 from safe_public_ci import ci_rc697_operational_evidence as gate
 
-MANIFEST=json.loads((ROOT/'evidence'/'RC697_TUR54_HOSTED_OPERATIONAL_OBSERVATIONS.json').read_text(encoding='utf-8'))
+MANIFEST=json.loads((ROOT/'docs'/'RC697_TUR54_HOSTED_OPERATIONAL_OBSERVATIONS.json').read_text(encoding='utf-8'))
 def H(x):return hashlib.sha256(str(x).encode('ascii')).hexdigest()
 def mutate(fn):
     m=copy.deepcopy(MANIFEST)

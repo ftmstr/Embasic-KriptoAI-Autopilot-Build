@@ -3,7 +3,7 @@
 A valid signature from a caller-provided key is NOT an independently authorized
 owner/reviewer/provider signature. No pins, revocation service, trusted clock,
 external Merkle anchor, remote CAS or remote ACK are accessible here.
-Cryptography is an OPTIONAL verification backend, not an authentication root.
+A delegated Ed25519 verifier is OPTIONAL, untrusted, and never a root.
 No IO, network, key generation, trading, fitting, or release mutation.
 """
 import hashlib
@@ -72,25 +72,25 @@ def canonical_signed_scope(e, full_log_bytes):
                        separators=(',',':'),allow_nan=False).encode('ascii')
     return b'KRYPTOAI-RC696-PROVIDER-LOG-V1\0'+len(payload).to_bytes(4,'big')+payload
 
-def verify_detached_ed25519(payload, public_key_hex, signature_hex):
-    """Optional cryptographic check only. Never establishes trusted key origin."""
+def verify_detached_ed25519(payload, public_key_hex, signature_hex, verifier=None):
+    """Delegated signature equation check, never authenticates the verifier/key."""
     _check(_bytes(payload),'payload_bytes_limit')
     _check(_hex(public_key_hex,64),'public_key_format')
     _check(_hex(signature_hex,128),'signature_format')
-    try:
-        from cryptography.exceptions import InvalidSignature
-        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-    except ImportError:
+    if verifier is None:
         return {'status':'CRYPTO_BACKEND_UNAVAILABLE','signature_math_valid':False,
                 'authorized':False,'external_gate_open':False}
+    _check(callable(verifier), 'untrusted_verifier_type')
     try:
-        pub=Ed25519PublicKey.from_public_bytes(bytes.fromhex(public_key_hex))
-        pub.verify(bytes.fromhex(signature_hex),payload)
-    except (InvalidSignature, ValueError):
-        return {'status':'INVALID_SIGNATURE','signature_math_valid':False,
+        equation_claim=verifier(payload, bytes.fromhex(public_key_hex),
+                                bytes.fromhex(signature_hex))
+    except Exception:
+        return {'status':'DELEGATED_VERIFIER_ERROR','signature_math_valid':False,
                 'authorized':False,'external_gate_open':False}
-    return {'status':'VALID_SIGNATURE_UNTRUSTED_KEY',
-            'signature_math_valid':True,'authorized':False,
+    _check(type(equation_claim) is bool,'verifier_result_type')
+    return {'status':('UNTRUSTED_ED25519_EQUATION_CLAIM' if equation_claim
+                      else 'INVALID_SIGNATURE'),
+            'signature_math_valid':False,'authorized':False,
             'external_gate_open':False}
 
 def inspect_provider_candidate(envelope, original_full_log, claimed_key_hex, signature_hex):

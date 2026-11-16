@@ -10,7 +10,7 @@ Actual prior native Ubuntu [run 43833630743](https://github.com/ftmstr/Embasic-K
 
 ## 2. Actual external acquisition attempts and observed facts
 
-Read-only public GitHub Actions API shows the above real runs, jobs, steps, full **decoded job-log strings**, and **zero workflow artifacts returned for each run**. The latest two logs were fetched independently, and their decoded-text content was re-encoded to UTF-8 and SHA-256 hashed; empty-string and `abc` SHA-256 test vectors verified the hashing implementation. The resulting exact observations are serialized in `evidence/RC697_TUR54_HOSTED_OPERATIONAL_OBSERVATIONS.json`. These are **real operational data observations**, not provider-**signed** source attestations. The decoded UTF-8 re-encoding might not preserve the provider's original raw response bytes exactly, and so its digest is **not described as a SHA-256 of original RAW provider log bytes**. Source identity, scope and expected workflow blobs are explicitly pinned.
+Read-only public GitHub Actions API shows the above real runs, jobs, steps, full **decoded job-log strings**, and **zero workflow artifacts returned for each run**. The latest two logs were fetched independently, and their decoded-text content was re-encoded to UTF-8 and SHA-256 hashed; empty-string and `abc` SHA-256 test vectors verified the hashing implementation. The resulting exact observations are serialized in `docs/RC697_TUR54_HOSTED_OPERATIONAL_OBSERVATIONS.json`. These are **real operational data observations**, not provider-**signed** source attestations. The decoded UTF-8 re-encoding might not preserve the provider's original raw response bytes exactly, and so its digest is **not described as a SHA-256 of original RAW provider log bytes**. Source identity, scope and expected workflow blobs are explicitly pinned.
 
 | Host | Run / job | Real steps and full-log tests | Decoded log length | Re-encoded UTF-8 bytes | SHA-256 of re-encoded decoded text |
 |---|---|---|---:|---:|---|
@@ -44,9 +44,15 @@ Python **3.13.5**, `PYTHONWARNINGS=error`: **30/30 new RC697 tests PASS**, `comp
 
 | File | local tested bytes | Git blob SHA-1 | raw SHA-256 |
 |---|---:|---|---|
-| `evidence/RC697_TUR54_HOSTED_OPERATIONAL_OBSERVATIONS.json` | 1620 | `9fc846f8ced272fafd858ba0ade14fdc7323c25a` | `dbc8ec2c8dac7b73e9a7e8001772225f70f8c19d4e316c39d10cbcff72350b20` |
+| `docs/RC697_TUR54_HOSTED_OPERATIONAL_OBSERVATIONS.json` | 1620 | `9fc846f8ced272fafd858ba0ade14fdc7323c25a` | `dbc8ec2c8dac7b73e9a7e8001772225f70f8c19d4e316c39d10cbcff72350b20` |
 | `tests/test_rc697_operational_evidence.py` | 9221 | `f3fa3b5a557351595fd77e59681f736ed4002d76` | `8c9d2d75805b5e7c24ab41aefe5f05e607417d8fb2f3ace48ba4dcd59c5592d2` |
 | `safe_public_ci/ci_rc697_operational_evidence.py` | 12043 | `3214356ae1d9773881ee16ebfe771cbbcb2e217c` | `da2d5ff8779cf5816726b26664896f76fa86396077f34ebada58ad29541c69e5` |
+
+## 5. First genuine TUR54 hosted failure (retained, fixed without weakening guard)
+
+Initial RC697 source SHA `3eae33c3432f61c426a148aa0b5b0f6fde2bab15` triggered real Ubuntu run `43848891904`, job `133236019144`, which completed **FAILURE** with 3034 tests attempted and **two existing RC655 preflight failures**: `test_no_private_data_directories` and `test_only_whitelisted_checkout_roots`. The new top-level `evidence/` directory violated the immutable allowlist and forbidden-roots policy. This directory was removed from the Public branch; its exact JSON blob is now stored in the sanctioned `docs/` directory. `tests/test_rc697_operational_evidence.py` was updated to read it from `docs/`; original RC655 guard and workflow filters/permissions remain untouched. The original failed run is not relabelled. The initial Windows run `43848891851` is also preserved in GitHub as its actual status, irrespective of eventual outcome.
+
+Local corrected `PYTHONWARNINGS=error` RC697 30/30 PASS, compileall and AST PASS. The next exact final source commit must independently trigger and pass new Ubuntu and Windows native full suites; earlier failures do not count as successful final-HEAD evidence.
 
 Report itself and manifest/tests must be committed **before** the final safe source, so unmodified Ubuntu and Windows workflow `push.paths` both trigger on the exact last source commit. Final native run/job/step/full-log evidence is unknown when writing this report: record exact final SHA and all actual final-HEAD results **only after** completion, via a PR #7 conversation comment (no further source commit). Any failed final run is a real recorded failure, never a pass.
 

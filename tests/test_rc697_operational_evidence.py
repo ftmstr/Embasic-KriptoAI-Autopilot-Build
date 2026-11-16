@@ -37,6 +37,10 @@ class ActualObservationBoundaries(unittest.TestCase):
         r=gate.inspect_snapshot(MANIFEST)
         self.assertEqual((r['hosted_observation_count'],r['verified_external_gates']),(2,0))
         self.assertFalse(r['authenticated'])
+        self.assertEqual(gate.sanctioned_manifest_path(gate.MANIFEST_PATH),
+                         'docs/RC697_TUR54_HOSTED_OPERATIONAL_OBSERVATIONS.json')
+        with self.assertRaisesRegex(gate.EvidenceRejected,'unsanctioned_manifest_root'):
+            gate.sanctioned_manifest_path('evidence/RC697_TUR54_HOSTED_OPERATIONAL_OBSERVATIONS.json')
     def test_02_real_log_observation_sha256_values_in_scope(self):
         x=MANIFEST['observations']
         self.assertEqual(x[0]['decoded_log_utf8_sha256'],'4b5e6a8bfb8ba430709c53d4c473d8dbe99a33a62f7e95eff32b8e12bec4355a')

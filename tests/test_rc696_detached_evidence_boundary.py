@@ -81,18 +81,37 @@ class ProofBoundaryCases(unittest.TestCase):
         b=b'x'*(gate.MAX_LOG_BYTES+1);e=envelope(body=b)
         with self.assertRaisesRegex(gate.EvidenceRejected,'log_bytes_limit'):gate.validate_envelope(e,b)
     def test_17_detached_ed25519_known_rfc8032_vector(self):
-        # RFC 8032 test vector #1: authentic Ed25519 equation, no external provenance.
+        # RFC 8032 vector #1: test harness may use independent crypto backend.
         pk='d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a'
         sig=('e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e06522490155'
              '5fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b')
-        r=gate.verify_detached_ed25519(b'',pk,sig)
-        self.assertIn(r['status'],('VALID_SIGNATURE_UNTRUSTED_KEY','CRYPTO_BACKEND_UNAVAILABLE'))
-        self.assertFalse(r['authorized']);self.assertFalse(r['external_gate_open'])
+        try:
+            from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+            def delegate(payload,key,signature):
+                Ed25519PublicKey.from_public_bytes(key).verify(signature,payload)
+                return True
+        except ImportError:
+            delegate=None
+        r=gate.verify_detached_ed25519(b'',pk,sig,delegate)
+        expected='UNTRUSTED_ED25519_EQUATION_CLAIM' if delegate else 'CRYPTO_BACKEND_UNAVAILABLE'
+        self.assertEqual(r['status'],expected)
+        self.assertFalse(r['signature_math_valid']);self.assertFalse(r['authorized'])
+        self.assertFalse(r['external_gate_open'])
     def test_18_detached_ed25519_wrong_data_fails_or_backend_blocked(self):
         pk='d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a'
         sig=('e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e06522490155'
              '5fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b')
-        r=gate.verify_detached_ed25519(b'forged',pk,sig)
+        def delegate(payload,key,signature):
+            try:
+                from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+                Ed25519PublicKey.from_public_bytes(key).verify(signature,payload)
+                return True
+            except ImportError:
+                return False
+            except Exception:
+                return False
+        r=gate.verify_detached_ed25519(b'forged',pk,sig,delegate)
+        self.assertEqual(r['status'],'INVALID_SIGNATURE')
         self.assertFalse(r['signature_math_valid']);self.assertFalse(r['authorized'])
     def test_19_malformed_ed25519_key_fails_closed(self):
         with self.assertRaisesRegex(gate.EvidenceRejected,'public_key_format'):
@@ -193,8 +212,6 @@ class ProofBoundaryCases(unittest.TestCase):
             if isinstance(x,ast.ImportFrom):imports.add(x.module)
             if isinstance(x,ast.Call) and isinstance(x.func,ast.Name):
                 self.assertNotIn(x.func.id,('open','exec','eval','compile','__import__'))
-        self.assertEqual(imports,{'hashlib','hmac','json','re',
-                                  'cryptography.exceptions',
-                                  'cryptography.hazmat.primitives.asymmetric.ed25519'})
+        self.assertEqual(imports,{'hashlib','hmac','json','re'})
 
 if __name__=='__main__':unittest.main()

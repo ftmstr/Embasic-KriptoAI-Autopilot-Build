@@ -12,6 +12,7 @@ import re
 
 REPO = 'ftmstr/Embasic-KriptoAI-Autopilot-Build'
 BRANCH = 'validation/rc654-pr1-rc653-combined-ci'
+MANIFEST_PATH = 'docs/RC697_TUR54_HOSTED_OPERATIONAL_OBSERVATIONS.json'
 BASE_SHA = '1b7cd5a7bd4251e702e1d93d6b2ddf034d84bd8e'
 MAX_LOG_BYTES = 2 * 1024 * 1024
 _HEX40 = re.compile(r'[0-9a-f]{40}\Z')
@@ -75,6 +76,11 @@ def h64(v):
 
 def positive(v):
     return type(v) is int and 0 < v <= _POSITIVE_MAX
+
+def sanctioned_manifest_path(path):
+    """Reject new top-level evidence roots, preserving RC655 release preflight."""
+    need(type(path) is str and path == MANIFEST_PATH, 'unsanctioned_manifest_root')
+    return MANIFEST_PATH
 
 def observation_plan():
     """Operationally actionable missing proof acquisition matrix, 0/8 authenticated."""

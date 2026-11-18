@@ -32,12 +32,18 @@ Added stdlib-only `safe_public_ci/ci_rc701_external_custody.py` and 24 regressio
 
 | Path | UTF-8 bytes | Git blob SHA-1 | SHA-256 |
 |---|---:|---|---|
-| `safe_public_ci/ci_rc701_external_custody.py` | 10587 | `19e39812d906dba73192c2f76f93012bf651e758` | `9f37b21487f6edf925dbae021e1c1174b162444b1ca091cd9a3fd5bfe7ed244b` |
-| `tests/test_rc701_external_custody.py` | 9330 | `a3c86191cad29950265837e1172de6faf193e3e0` | `64a50af26465971eb95769106c105fce00c55669fc6911d3f03f3a80f6c14200` |
+| `safe_public_ci/ci_rc701_external_custody.py` | 11574 | `d338d2828d590e812a2a4be769a67d2f608173e4` | `37efc16c7772dfd3718dfe5d898b6fd79d4b3c73d325e00376dcd40388f23256` |
+| `tests/test_rc701_external_custody.py` | 9321 | `9cc8635717d763f4d7ba19e002dbafe01b70109b` | `0845492ea6a0198dcad32f3df7e71b2d67890397d41ef9a45c31e1825a05a5bf` |
 
-Local actual **Python 3.13.5**, `PYTHONWARNINGS=error`, **24/24 RC701 PASS**, AST parse PASS, `compileall -q` PASS. The new files import only Python standard library, perform zero file/network I/O in runtime and do not contact an exchange. Final native full suite should have **3130 (3106 prior +24)** tests, but must NEVER be claimed PASS before independently confirming both actual final-HEAD Ubuntu and Windows run/job 9/9 and full original logs.
+Local actual **Python 3.13.5**, `PYTHONWARNINGS=error`, **24/24 RC701 PASS**, AST parse PASS, `compileall -q` PASS; additionally independent Python standard-library base64 comparison on **512/512 deterministic random byte vectors PASS** after the immutable import-guard fix. The new files import only Python standard library, perform zero file/network I/O in runtime and do not contact an exchange. Final native full suite should have **3130 (3106 prior +24)** tests, but must NEVER be claimed PASS before independently confirming both actual final-HEAD Ubuntu and Windows run/job 9/9 and full original logs.
 
 **Commit procedure:** report first, test file next, source LAST to trigger the unchanged Ubuntu + Windows workflow path filters at an exact final source HEAD. Record job IDs, raw observed full-log PASS counts, new exact file hashes and preservation in a comment on PR #7 **after** native CI. No fake PASS or unobserved remote proof.
+
+## 3A. First TUR58 native CI failure retained; existing allowlist preserved
+
+Initial source HEAD `888444e6838c627dd59507456ae910f2d29e4bed` triggered genuine Ubuntu run `44359929767` job `134998172581` and Windows run `44359927103`, both `completed/failure`; new 24 RC701 cases passed, but the unchanged `tests/test_guard.py::test_import_whitelist` rejected runtime import `base64` outside its narrowly approved import list. No existing guard, workflow, package policy, root restriction, main, or PR #1 was altered.
+
+The repair replaces source-side `base64` import with a fully stdlib-independent strict RFC 4648 standard base64 encoder/decoder implemented using built-in operations and canonical re-encoding checks. Allowed source imports now exclusively `hashlib,hmac,json,re`. The existing guard is preserved. RC701 tests were updated to assert the unchanged import policy; local independent `base64` *test-only* encoder comparisons passed 512/512 random byte lengths from 0..511. The initial failed Ubuntu and Windows Actions runs remain failures in GitHub history. A new final source commit must trigger fresh genuine native Ubuntu/Windows CI, and the expected **3130** tests and **9/9** steps cannot be called final-HEAD PASS without independently completed original full logs.
 
 ## 4. Required independent security gates — ALL 0/8 BLOCKED
 

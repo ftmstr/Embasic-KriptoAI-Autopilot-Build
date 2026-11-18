@@ -137,7 +137,7 @@ class AwsLostReply(unittest.TestCase):
             if isinstance(n,ast.ImportFrom):imports.add(n.module)
             if isinstance(n,ast.Call) and isinstance(n.func,ast.Name):
                 self.assertNotIn(n.func.id,('open','eval','exec','compile','__import__'))
-        self.assertEqual(imports,{'base64','hashlib','hmac','json','re'})
+        self.assertEqual(imports,{'hashlib','hmac','json','re'})
         self.assertEqual(len(m.external_gate_matrix()),8)
         self.assertTrue(all(x['status']=='BLOCKED' for x in m.external_gate_matrix()))
 

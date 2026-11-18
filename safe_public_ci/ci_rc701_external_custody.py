@@ -5,7 +5,6 @@ accept caller-provided root keys, or authorize trading. A signed-looking note
 and a typed AWS response remain UNAUTHENTICATED until checked by independent
 pinned operators and external replay-resistant infrastructure.
 """
-import base64
 import hashlib
 import hmac
 import json
@@ -54,15 +53,42 @@ def number(v):
 def identifier(v):
     return type(v) is str and IDENT.fullmatch(v) is not None
 
+_BASE64_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+def encode64(data):
+    """Strict RFC4648 standard-base64 encoder using no extra imports."""
+    out = []
+    for i in range(0,len(data),3):
+        chunk=data[i:i+3]
+        n=int.from_bytes(chunk.ljust(3,b'\x00'),'big')
+        out.append(_BASE64_ALPHABET[(n>>18)&63])
+        out.append(_BASE64_ALPHABET[(n>>12)&63])
+        out.append(_BASE64_ALPHABET[(n>>6)&63] if len(chunk)>1 else '=')
+        out.append(_BASE64_ALPHABET[n&63] if len(chunk)>2 else '=')
+    return ''.join(out)
+
 def b64_bytes(v, max_len):
-    require(type(v) is str and len(v) <= max_len * 2, 'encoded_material_size')
-    try:
-        b = base64.b64decode(v, validate=True)
-    except (ValueError, base64.binascii.Error) as exc:
-        raise CustodyRejected('invalid_base64_material') from exc
-    require(0 < len(b) <= max_len and base64.b64encode(b).decode('ascii') == v,
-            'canonical_material_size')
-    return b
+    require(type(v) is str and 0<len(v)<=max_len*2 and len(v)%4==0,
+            'invalid_base64_material')
+    out=bytearray()
+    for i in range(0,len(v),4):
+        chunk=v[i:i+4]
+        padding=chunk.count('=')
+        require(padding<=2 and chunk[0]!='=' and chunk[1]!='=' and
+                (padding==0 or i==len(v)-4) and
+                chunk.endswith('='*padding), 'invalid_base64_material')
+        n=0
+        for ch in chunk:
+            k=0 if ch=='=' else _BASE64_ALPHABET.find(ch)
+            require(k>=0,'invalid_base64_material')
+            n=(n<<6)|k
+        out.append((n>>16)&255)
+        if padding<2:out.append((n>>8)&255)
+        if padding<1:out.append(n&255)
+        require(len(out)<=max_len,'encoded_material_size')
+    data=bytes(out)
+    require(encode64(data)==v, 'canonical_material_size')
+    return data
 
 def checkpoint_material(cp):
     require(type(cp) is dict and cp.keys()==CHECKPOINT_FIELDS, 'checkpoint_schema')
@@ -76,7 +102,7 @@ def checkpoint_material(cp):
     # Parsing is NOT signature verification. No caller-supplied key is trusted.
     require(type(cp['log_origin']) is str and 1 <= len(cp['log_origin']) <= 256 and
             '\n' not in cp['log_origin'] and '\r' not in cp['log_origin'], 'log_origin')
-    root_b64=base64.b64encode(bytes.fromhex(cp['root_sha256'])).decode('ascii')
+    root_b64=encode64(bytes.fromhex(cp['root_sha256']))
     header=(cp['log_origin']+'\n'+str(cp['tree_size'])+'\n'+root_b64+'\n\n').encode('utf-8')
     require(note.startswith(header), 'checkpoint_body_not_bound_to_tree')
     try:

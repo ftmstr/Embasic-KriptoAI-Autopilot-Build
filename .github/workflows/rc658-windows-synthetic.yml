@@ -1,0 +1,40 @@
+name: RC658 Windows Hosted Synthetic Smoke (NO LIVE)
+on:
+  push:
+    branches:
+      - validation/rc654-pr1-rc653-combined-ci
+    paths:
+      - 'safe_public_ci/**'
+      - 'tests/test_rc658_windows_portability.py'
+      - '.github/workflows/rc658-windows-synthetic.yml'
+      - '.github/workflows/rc654-validation-synthetic.yml'
+permissions:
+  contents: read
+jobs:
+  verify-windows-synthetic-only:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    env:
+      SAFE_TEST_ONLY: '1'
+    steps:
+      - name: Checkout Public Build without credentials
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          submodules: false
+          lfs: false
+      - name: Install exact CPython x64
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.13.5'
+          architecture: x64
+          check-latest: false
+      - name: Check interpreter version
+        run: python -c "import sys; assert sys.version_info[:3] == (3, 13, 5)"
+      - name: Compile synthetic-only modules and tests
+        run: python -m compileall -q safe_public_ci tests
+      - name: Run isolated synthetic suite on Windows
+        run: python -m unittest discover -s tests -v

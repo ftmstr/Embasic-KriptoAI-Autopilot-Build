@@ -1,0 +1,33 @@
+{
+  "repository": "ftmstr/Embasic-KriptoAI-Autopilot-Build",
+  "branch": "validation/rc654-pr1-rc653-combined-ci",
+  "source_sha": "1b7cd5a7bd4251e702e1d93d6b2ddf034d84bd8e",
+  "tool_path": "GITHUB_API_READ_ONLY",
+  "observation_mode": "DECODED_UTF8_REENCODE_UNAUTHENTICATED",
+  "observations": [
+    {
+      "platform": "ubuntu", "run": 43833630743, "job": 133184729775,
+      "attempt": 1, "workflow_blob_sha": "140264aaf07f3130a23606254f545b4ff77b1971",
+      "run_status": "completed/success", "job_status": "completed/success",
+      "step_success": 9, "test_pass": 3004, "test_rc696_pass": 41,
+      "decoded_log_code_units": 502036, "decoded_log_utf8_bytes": 502118,
+      "decoded_log_utf8_sha256": "4b5e6a8bfb8ba430709c53d4c473d8dbe99a33a62f7e95eff32b8e12bec4355a",
+      "artifact_count": 0, "provider_signature_verified": false,
+      "evidence_kind": "GITHUB_API_OPERATIONAL_LOG_ONLY"
+    },
+    {
+      "platform": "windows", "run": 43833630781, "job": 133184729913,
+      "attempt": 1, "workflow_blob_sha": "254ac4f4ea821a05ee4730c3828d4de1b96a0e72",
+      "run_status": "completed/success", "job_status": "completed/success",
+      "step_success": 9, "test_pass": 3004, "test_rc696_pass": 41,
+      "decoded_log_code_units": 513496, "decoded_log_utf8_bytes": 513498,
+      "decoded_log_utf8_sha256": "3955877ecedfb8f0deb4cb741cf263de9cfc154187e8b3abe7ad3e50f35ffed7",
+      "artifact_count": 0, "provider_signature_verified": false,
+      "evidence_kind": "GITHUB_API_OPERATIONAL_LOG_ONLY"
+    }
+  ],
+  "external_gate_count": 0,
+  "trusted_at": null,
+  "release_allowed": false,
+  "live_allowed": false
+}

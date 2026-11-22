@@ -40,16 +40,24 @@ class RemoteRecipientNonEquivalence(unittest.TestCase):
             with self.assertRaisesRegex(m.RecipientAckBlocked, error):
                 m.inspect_candidate(candidate(kind))
 
-    def test_03_unsupported_cross_region_and_self_attested_ack_rejected(self):
-        for regions, witness in ((['us-east-1', 'eu-west-1'], 'us-west-2'),
+    def test_03_unsupported_region_and_self_attested_ack_rejected(self):
+        for regions, witness in ((['us-east-1', 'eu-west-1'], 'af-south-1'),
                                  (['us-east-1', 'us-east-2'], 'us-west-1')):
             value = candidate(); value['replica_regions'] = regions
             value['witness_region'] = witness
             with self.assertRaisesRegex(m.RecipientAckBlocked,
-                                        'unsupported_or_cross_region_set'):
+                                        'unsupported_mrsc_region'):
                 m.inspect_candidate(value)
         value = candidate(); value['replica_regions'] = ['eu-west-1', 'eu-west-2']
         value['witness_region'] = 'eu-central-1'
+        self.assertEqual(m.inspect_candidate(value)['external_gates_verified'], 0)
+        # AWS 2026-09-23: cross-continent topology is now supported.
+        self.assertEqual(len(m.SUPPORTED_MRSC_REGIONS), 15)
+        value = candidate(); value['replica_regions'] = ['us-east-1', 'eu-west-1']
+        value['witness_region'] = 'ap-south-1'
+        self.assertEqual(m.inspect_candidate(value)['external_gates_verified'], 0)
+        value = candidate(); value['replica_regions'] = ['ca-central-1', 'eu-south-2']
+        value['witness_region'] = 'ap-southeast-1'
         self.assertEqual(m.inspect_candidate(value)['external_gates_verified'], 0)
         for key in ('claims_independent_recipient_auth', 'claims_durable_cas',
                     'claims_external_time', 'claims_provider_original_raw_log'):

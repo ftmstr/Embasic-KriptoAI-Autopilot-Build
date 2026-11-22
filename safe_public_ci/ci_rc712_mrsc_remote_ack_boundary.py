@@ -11,12 +11,16 @@ BRANCH = 'validation/rc654-pr1-rc653-combined-ci'
 BASE_SHA = 'd0ef2232f7eef83f82b24b9d199863c34210653a'
 HOSTS = {'ubuntu': (44712263026, 136206625554),
          'windows': (44712262558, 136206624211)}
-# Provider-listed MRSC compatible Region sets (not proof of provisioned AWS).
-REGION_SETS = (
-    frozenset(('us-east-1', 'us-east-2', 'us-west-2')),
-    frozenset(('eu-west-1', 'eu-west-2', 'eu-west-3', 'eu-central-1')),
-    frozenset(('ap-northeast-1', 'ap-northeast-2', 'ap-northeast-3')),
-)
+# AWS 2026-09-23 MRSC expansion: any three distinct supported Regions,
+# including cross-continent. Candidate shape is NOT provider authentication.
+# https://aws.amazon.com/about-aws/whats-new/2026/09/dynamodb-mrsc-additional-regions/
+SUPPORTED_MRSC_REGIONS = frozenset((
+    'us-east-1', 'us-east-2', 'us-west-2', 'ca-central-1',
+    'eu-west-1', 'eu-west-2', 'eu-west-3', 'eu-central-1',
+    'eu-north-1', 'eu-south-2',
+    'ap-northeast-1', 'ap-northeast-2', 'ap-northeast-3',
+    'ap-south-1', 'ap-southeast-1',
+))
 MATERIAL_TYPES = (
     'MRSC_CONDITIONAL_WRITE_RESULT', 'MRSC_STREAM_RECORD',
     'CLOUDWATCH_REPLICATION_LATENCY', 'MRSC_WITNESS_READ_RESULT',
@@ -67,8 +71,8 @@ def inspect_candidate(value):
           (len(replicas) == 2 and type(witness) is str and witness not in replicas),
           'three_region_mrsc_topology')
     regions = frozenset(replicas) | (frozenset((witness,)) if witness else frozenset())
-    _need(len(regions) == 3 and any(regions <= group for group in REGION_SETS),
-          'unsupported_or_cross_region_set')
+    _need(len(regions) == 3 and regions <= SUPPORTED_MRSC_REGIONS,
+          'unsupported_mrsc_region')
     material = value['material_type']
     _need(type(material) is str and material in MATERIAL_TYPES, 'material_type')
     if material == 'CLOUDWATCH_REPLICATION_LATENCY':

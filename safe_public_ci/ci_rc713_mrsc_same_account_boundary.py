@@ -12,12 +12,16 @@ BRANCH = 'validation/rc654-pr1-rc653-combined-ci'
 SOURCE_SHA = 'cc5fbbffa79b25e5b27e17e5249672819ee860a3'
 HOSTED = {'ubuntu': (44840891682, 136648671157),
           'windows': (44840891793, 136648670967)}
-# AWS-supported MRSC Region sets, not evidence that a table exists.
-REGION_SETS = (
-    frozenset(('us-east-1', 'us-east-2', 'us-west-2')),
-    frozenset(('eu-west-1', 'eu-west-2', 'eu-west-3', 'eu-central-1')),
-    frozenset(('ap-northeast-1', 'ap-northeast-2', 'ap-northeast-3')),
-)
+# AWS 2026-09-23 MRSC expansion: any three distinct supported Regions,
+# including cross-continent. Candidate shape is NOT provider authentication.
+# https://aws.amazon.com/about-aws/whats-new/2026/09/dynamodb-mrsc-additional-regions/
+SUPPORTED_MRSC_REGIONS = frozenset((
+    'us-east-1', 'us-east-2', 'us-west-2', 'ca-central-1',
+    'eu-west-1', 'eu-west-2', 'eu-west-3', 'eu-central-1',
+    'eu-north-1', 'eu-south-2',
+    'ap-northeast-1', 'ap-northeast-2', 'ap-northeast-3',
+    'ap-south-1', 'ap-southeast-1',
+))
 TABLE_ARN = re.compile(r'arn:aws:dynamodb:([a-z0-9-]+):([0-9]{12}):table/([A-Za-z0-9_.-]{3,255})\Z')
 FIELDS = frozenset((
     'repository', 'branch', 'source_sha', 'ubuntu_run', 'ubuntu_job',
@@ -74,8 +78,8 @@ def quarantine_same_account_mrsc(record):
              (len(regions) == 2 and type(witness) is str and witness not in regions),
              'mrsc_three_region_shape')
     all_regions = frozenset(regions) | (frozenset((witness,)) if witness is not None else frozenset())
-    _require(len(all_regions) == 3 and any(all_regions <= group for group in REGION_SETS),
-             'mrsc_supported_region_set')
+    _require(len(all_regions) == 3 and all_regions <= SUPPORTED_MRSC_REGIONS,
+             'mrsc_supported_region')
     _require(_hex64(record['claimed_provider_response_sha256']) and
              _hex64(record['request_id_sha256']) and
              record['claimed_provider_response_sha256'] != record['request_id_sha256'],

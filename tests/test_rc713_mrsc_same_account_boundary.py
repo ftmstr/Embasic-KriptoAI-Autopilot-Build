@@ -53,13 +53,23 @@ class MRSCMultiAccountNoGo(unittest.TestCase):
         x = candidate(); x['replica_table_arns'][1] = 'arn:aws:dynamodb:us-east-2:123456789012:table/WrongTable'
         with self.assertRaisesRegex(m.MRSCAccountBoundaryBlocked, 'global_replica_table_name_must_match'):
             m.quarantine_same_account_mrsc(x)
-        x = candidate(); x['witness_region'] = 'eu-west-1'
-        with self.assertRaisesRegex(m.MRSCAccountBoundaryBlocked, 'mrsc_supported_region_set'):
+        x = candidate(); x['witness_region'] = 'us-west-1'
+        with self.assertRaisesRegex(m.MRSCAccountBoundaryBlocked, 'mrsc_supported_region'):
             m.quarantine_same_account_mrsc(x)
         x = candidate()
         x['replica_table_arns'].append('arn:aws:dynamodb:us-west-2:123456789012:table/FencingTable')
         x['witness_region'] = None
         self.assertEqual(m.quarantine_same_account_mrsc(x)['external_gates_verified'], 0)
+        self.assertEqual(len(m.SUPPORTED_MRSC_REGIONS), 15)
+        x = candidate()
+        x['replica_table_arns'] = [
+            'arn:aws:dynamodb:ca-central-1:123456789012:table/FencingTable',
+            'arn:aws:dynamodb:eu-north-1:123456789012:table/FencingTable']
+        x['witness_region'] = 'ap-southeast-1'
+        self.assertEqual(m.quarantine_same_account_mrsc(x)['external_gates_verified'], 0)
+        x['replica_table_arns'][1] = 'arn:aws:dynamodb:eu-central-2:123456789012:table/FencingTable'
+        with self.assertRaisesRegex(m.MRSCAccountBoundaryBlocked, 'mrsc_supported_region'):
+            m.quarantine_same_account_mrsc(x)
     def test_04_untrusted_admin_claims_exact_scope_and_ast_import(self):
         for key in ('claims_aws_describe_authenticated', 'claims_distinct_admin_roles_verified',
                     'claims_independent_oob_reviewer', 'claims_two_host_durable_cas',
